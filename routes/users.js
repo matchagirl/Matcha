@@ -12,6 +12,7 @@ router.get('/', function(req, res, next) {
 
 router.signup = function(req, res){
    message = '';
+   console.log("register here");
    if(req.method == "POST"){
       var post  = req.body;
       var name= post.user_name;
@@ -24,7 +25,7 @@ router.signup = function(req, res){
       var sql = "INSERT INTO `users`(`username`,`firstname`,`lastname`,`email`, `password`) VALUES ('" + name + "','" + fname + "','" + lname + "','" + email + "','" + pass + "')";
       
       var query = con.query(sql, function(err, result) {
-         console.log(sql);
+         // console.log(sql);
          
          message = "Succesfully! Your account has been created.";
          res.render('index', {page:'MATCHA', menuId:'MATCHA'});
@@ -38,6 +39,7 @@ router.signup = function(req, res){
 
 //-----------------------------------------------login page call------------------------------------------------------
 router.login = function(req, res){
+   // console.log("log in here");
    var message = '';
    var sess = req.session; 
 
@@ -45,16 +47,20 @@ router.login = function(req, res){
       var post  = req.body;
       var name= post.username;
       var pass= post.password;
+
+      if (sess.loggedin){   
+         res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username});
+      }
      
       var sql="SELECT id, firstname, lastname, username FROM `users` WHERE `username`='"+name+"' and password = '"+pass+"'";                           
       con.query(sql, function(err, results){      
          if(results.length){
-            req.session.userId = results[0].id;
-            req.session.user = results[0];
-            console.log(results[0].username);
-            // res.redirect('/home/dashboard');
-            res.render('index', {page:'MATCHA', menuId:'MATCHA'});
-
+            sess.userId = results[0].id;
+            sess.user = results[0];
+            sess.loggedin = true;
+            // console.log(sess.userId);
+            // console.log(sess.user.firstname);
+            res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username});
          }
          else{
             message = 'Wrong Credentials.';
@@ -71,4 +77,41 @@ router.login = function(req, res){
    }
            
 };
+
+ //-----------------------------------------------profile update------------------------------------------------------
+
+router.update = function(req, res) {
+   var sess = req.session;
+   // console.log(sess);
+   if(req.method == "POST"){
+      var post  = req.body;
+      var name= post.user_name;
+      var fname= post.first_name;
+      var lname= post.last_name;
+      var email= post.email;
+      var gender= post.gender;
+
+      console.log(post);
+      console.log("here");
+   }
+
+   res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username});
+};
+
+// //-----------------------------------------------logout------------------------------------------------------
+// router.logout = function(req, res) {
+//    var sess = req.session;
+//    sess.destroy(function(err){  
+//          if(err){  
+//              console.log(err); 
+//             //  Response.errorResponse(err.message,res); 
+//          }  
+//          else
+//              console.log('User logged out successfully!');
+//          });
+//    if(sess !== null)       
+//          res.render('index', {page: 'MATCHA', menuID: 'MATCHA'}); 
+//  };
+
+
 module.exports = router;

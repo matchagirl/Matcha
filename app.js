@@ -21,7 +21,7 @@ app.use(session({
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 60000 }
+  cookie: { maxAge: 60000000 }
 }))
 
 // view engine setup
@@ -48,6 +48,8 @@ app.use('/users', usersRouter);
 
 app.post('/signup', usersRouter.signup);//call for signup post
 app.post('/login', usersRouter.login);//call for login post
+app.post('/update', usersRouter.update);//call for upload post
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
