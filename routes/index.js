@@ -55,8 +55,8 @@ router.get('/logout', function(req, res, next){
 /* GET profile page*/
 router.get('/profile', function(req, res, next){
   var sess = req.session;
-  // console.log(sess);
-  res.render('profile', {page:'MATCHA', menuId:'MATCHA', firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username});
+  console.log(sess);
+  res.render('profile', {page:'MATCHA', menuId:'MATCHA', firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data});
 });
 
 /* GET profile update*/

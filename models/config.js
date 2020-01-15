@@ -10,8 +10,6 @@ var con = mysql.createConnection({
     socketPath: "/goinfre/lmnyamen/Desktop/MAMP/mysql/tmp/mysql.sock"
 
   });
-
-  const db ="matcha";
   
   con.connect(function(err) {
     if (err) throw err;

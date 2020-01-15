@@ -51,7 +51,7 @@ router.login = function(req, res){
       var pass= post.password;
 
       if (sess.loggedin){   
-         res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username});
+         res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username, data: sess.data});
       }
      
       var sql="SELECT id, firstname, lastname, username FROM `users` WHERE `username`='"+name+"' and password = '"+pass+"'";                           
@@ -60,9 +60,16 @@ router.login = function(req, res){
             sess.userId = results[0].id;
             sess.user = results[0];
             sess.loggedin = true;
+            var sql = "SELECT*FROM `profiles` WHERE `userID` = '"+ sess.userId +"'";
+               con.query(sql, function(err, results){
+                  if (results.length){
+                     sess.data = results[0];
+                     // console.log(typeof sess.data)
+                     res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username, data: sess.data});
+                        }
+                     });
             // console.log(sess.userId);
             // console.log(sess.user.firstname);
-            res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username});
          }
          else{
             message = 'Wrong Credentials.';
@@ -86,6 +93,7 @@ router.update = function(req, res) {
    var sess = req.session;
    // console.log(sess);
    var message = '';
+   var data = sess.data;
    
    if(req.method == "POST"){
       var post  = req.body;
@@ -110,7 +118,7 @@ router.update = function(req, res) {
 
 
       var userID = sess.user.id;
-      console.log(post);
+      // console.log(post);
 
       if (name){
          var sql="SELECT*FROM `users` WHERE `username`='"+name+"'";
@@ -131,7 +139,7 @@ router.update = function(req, res) {
                         sess.loggedin = true;
                      //  console.log("nothing helps");
                      // console.log(sess.user);
-                     res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+                     res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data : sess.data});
                   }
                   else{console.log(err)
                   }
@@ -140,7 +148,7 @@ router.update = function(req, res) {
             else{
                   message = "username already exist";
                   console.log("username already exist");
-                  res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+                  res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: sess.data});
 
             }
          });
@@ -159,7 +167,7 @@ router.update = function(req, res) {
                   sess.loggedin = true;
                //  console.log("nothing helps");
                // console.log(sess.user);
-               res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+               res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: sess.data});
             }
             else{console.log(err)
             }
@@ -180,7 +188,7 @@ router.update = function(req, res) {
                   sess.loggedin = true;
                //  console.log("nothing helps");
                // console.log(sess.user);
-               res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+               res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: sess.data});
             }
             else{console.log(err)
             }
@@ -206,7 +214,7 @@ router.update = function(req, res) {
                         sess.loggedin = true;
                      //  console.log("nothing helps");
                      // console.log(sess.user);
-                     res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+                     res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: sess.data});
                   }
                   else{console.log(err)
                   }
@@ -215,7 +223,7 @@ router.update = function(req, res) {
             else{
                   message = "email already exist";
                   console.log("email already exist");
-                  res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+                  res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: sess.data});
 
             }
          });
@@ -377,11 +385,20 @@ router.update = function(req, res) {
                                 var query = con.query(sql, function(err, result) {
                                     // res.redirect('profile/'+result.insertId);
                                 });
+                                var sql = "SELECT*FROM `profiles` WHERE `id` = '"+ profileId +"'";
+                                var query = con.query(sql, function(err, results){
+                                   if (results.length){
+                                      sess.data = results;
+                                      console.log(sess.data);
+                                      res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: sess.data});
+                                   }
+                                })
                             });
                     } else {
                       message = "This format is not allowed , please upload file with '.png','.gif','.jpg'";
                      //  res.render('index.ejs',{message: message});
                      }
+
                   }
 
                }
@@ -389,10 +406,9 @@ router.update = function(req, res) {
                }
             });
          }
-      res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
    }
    else
-      res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message});
+      res.render('profile', {page:'MATCHA', menuId:'MATCHA' , userId : sess.userId, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, message: message, data: data});
 };
 
 // //-----------------------------------------------logout------------------------------------------------------
