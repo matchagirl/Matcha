@@ -51,6 +51,8 @@ app.use('/users', usersRouter);
 app.post('/signup', usersRouter.signup);//call for signup post
 app.post('/login', usersRouter.login);//call for login post
 app.post('/update', usersRouter.update);//call for upload post
+app.post('/update2', usersRouter.update2);//call for upload2 post
+
 
 
 // catch 404 and forward to error handler
@@ -70,7 +72,7 @@ app.use(function(err, req, res, next) {
 });
 
 
-app.listen(8080, (err) => {
+app.listen(8081, (err) => {
   if (err) throw err;
   else {
     console.log("Server running on port: 8080");

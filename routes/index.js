@@ -16,6 +16,7 @@ router.get('/', function(req, res, next) {
 /* GET home page. */
 router.get('/homepage', function(req, res, next) {
   var sess = req.session;
+  // console.log(sess);
   res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username: sess.user.username});
 });
 
@@ -27,7 +28,8 @@ router.get('/login', function(req, res, next){
 
 /* GET reister page*/
 router.get('/register', function(req, res, next){
-  console.log("register");
+  // console.log("register");
+  
   res.render('register', {page:'MATCHA', menuId:'MATCHA'});
 });
 
@@ -49,21 +51,29 @@ router.get('/logout', function(req, res, next){
          //  if(sess !== null)       
          //        res.render('index', {page: 'MATCHA', menuId: 'MATCHA'}); 
          res.render('index', {page:'MATCHA', menuId:'MATCHA'});
-         console.log(sess);
+        //  console.log(sess);
 });
 
 /* GET profile page*/
 router.get('/profile', function(req, res, next){
   var sess = req.session;
-  console.log(sess);
-  res.render('profile', {page:'MATCHA', menuId:'MATCHA', firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data});
+  // console.log(sess);
+  res.render('profile', {page:'MATCHA', menuId:'MATCHA', post : sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data});
 });
 
 /* GET profile update*/
 router.get('/update', function(req, res, next){
   // console.log("jonga");
   var sess = req.session
-  res.render('update', {page:'MATCHA', menuId:'MATCHA'});
+  // console.log(sess);
+  res.render('update', {page:'MATCHA', menuId:'MATCHA', data: sess.data});
+});
+
+router.get('/update2', function(req, res, next){
+  // console.log("jonga");
+  var sess = req.session
+  // console.log(sess);
+  res.render('update2', {page:'MATCHA', menuId:'MATCHA', data: sess.data});
 });
 
 // router.get('/upload', function(req, res, next){

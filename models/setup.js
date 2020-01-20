@@ -14,7 +14,7 @@
     console.log("Table users created");
  });
 
- con.query(`CREATE TABLE IF NOT EXISTS profiles(id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,\
+ con.query(`CREATE TABLE IF NOT EXISTS profiles ( id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,\
    userID int(11) NOT NULL,\
    gender varchar(100) ,\
    sexualpref varchar(100) ,\
@@ -32,4 +32,14 @@
 )`, (err, result) => {
    if (err) throw err;
    console.log("Table profiles created");
+});
+
+con.query(`CREATE TABLE IF NOT EXISTS interest (id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY, name VARCHAR(255))`, (err, result) => {
+   if (err) throw err;
+   console.log("Table interest created");
+});
+
+con.query(`CREATE TABLE IF NOT EXISTS userinterest (id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY, userId int(11), inteId int(11))`, (err, result) => {
+   if (err) throw err;
+   console.log("Table userinterest created");
 });

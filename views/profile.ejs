@@ -13,50 +13,55 @@
     <!-- <h4><%=page %></h4><br> -->
     <h3> <%=firstname%> <%=lastname%> <%=username%></h3>
     <!-- <p> <%=lastname%></p> -->
-    <div class="container">
-        <!-- <h1>Dan Englishby</h1> -->
+    <%if(data){%>
+      <div class="container">
         <h3> Avator</h3>
-        <a><img src="http://localhost:8080/images/upload_images/<%=data.avator%>" alt="profile-picture" border="0"/></a>
-        <h4> More Me <h4>
-            <div class="row">
-                <div class="column">
-                  <img src="http://localhost:8080/images/upload_images/<%=data.image1%>" alt="picture" style="width:100%">
-                </div>
-                <div class="column">
-                  <img src="http://localhost:8080/images/upload_images/<%=data.image2%>" alt="picture" style="width:100%">                   
-                </div>
-                <div class="column">
-                    <img src="http://localhost:8080/images/upload_images/<%=data.image3%>" alt="picture" style="width:100%">                                     
-                </div>
-                <div class="column">
-                  <img src="http://localhost:8080/images/upload_images/<%=data.image4%>" alt="picture" style="width:100%">                                       
-                </div>
-              </div>
-        <h5>About Me</h5>
-        <p><%=data.biography%></p>
-        <h6>My Interests</h6>
-        <div class="listFlex">
-           <div>
+        <button> <a href="/update2">update</a></button>
+      <a><img src="http://localhost:8081/images/upload_images/<%=data.avator%>" alt="profile-picture" border="0" /></a>
+      <h4> More Me <h4>
+          <div class="row">
+            <div class="column">
+              <img src="http://localhost:8081/images/upload_images/<%=data.image1%>" alt="picture" style="width:100%">
+            </div>
+            <div class="column">
+              <img src="http://localhost:8081/images/upload_images/<%=data.image2%>" alt="picture" style="width:100%">
+            </div>
+            <div class="column">
+              <img src="http://localhost:8081/images/upload_images/<%=data.image3%>" alt="picture" style="width:100%">
+            </div>
+            <div class="column">
+              <img src="http://localhost:8081/images/upload_images/<%=data.image4%>" alt="picture" style="width:100%">
+            </div>
+            <!-- <button>  <a href="/update2">update</a></button> -->
+          </div>
+          <h5>About Me</h5>
+          <p><%=data.biography%></p>
+          <!-- <button>  <a href="/update2">update</a></button> -->
+          <%if(post){%>
+          <h6>My Interests</h6>
+          <div class="listFlex">
+
+              <% post.forEach(function(iterm){ %>
+                 <ul><li><p><%=iterm%></p><li></ul> 
+            <% }); %>
+            <!-- <div>
               <ul>
-                 <li><% if (data.extremeSport) {%> <p> extremeSport</p> <%}; %></li>
-                 <li><% if (data.outdoor) {%> <p> outdoor</p> <%}; %></li>
-                 <li><% if (data.geekSport) {%> <p> geekSport</p> <%}; %></li>
-                 
+                <li><% if (post.extreme_sport) {%> <p> extremeSport</p> <%}; %></li>
+                <li><% if (post.outdoor_activities) {%> <p> outdoor</p> <%}; %></li>
+                <li><% if (post.geek_sports) {%> <p> geekSport</p> <%}; %></li>
+
               </ul>
-           </div>
-           <div>
+            </div>
+            <div>
               <ul>
-                  <li><% if (data.foodie) {%> <p> foodie</p> <%}; %></li>                 
-                  <li><% if (data.BDSM) {%> <p> BDSM</p> <%}; %></li>
+                <li><% if (post.foodie) {%> <p> foodie</p> <%}; %></li>
+                <li><% if (post.BDSM) {%> <p> BDSM</p> <%}; %></li>
+                <li><% if (post.otherInterest) {%> <p> <%=post.otherInterest%></p> <%}; %></li>
               </ul>
-           </div>
-        <!-- </div>
-        <h4>Social Media</h4>
-        Catch me on Twitter - <a href="https://twitter.com/DanEnglishby">@DanEnglishby</a> -->
-     </div>
+            </div> -->
+          </div> <%}%>
+    </div><%}%>
   </div>
-  </div>
-  <div> 
 </body>
 <% include partials/script.ejs%>
 
