@@ -1,0 +1,15 @@
+{
+  "name": "sendmail",
+  "version": "1.0.0",
+  "description": "an app to send email",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Thembi",
+  "license": "ISC",
+  "dependencies": {
+    "nodemailer": "^6.4.2",
+    "sanitizer": "^0.1.3"
+  }
+}

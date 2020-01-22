@@ -10,6 +10,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var loginRouter = require('./routes/login');
 var regRouter = require('./routes/register');
+var forgotRouter = require('./routes/forgot');
+var resetRouter = require('./routes/reset');
 
 
 var app = express();
@@ -40,6 +42,13 @@ app.use(fileUpload());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/forgot', forgotRouter);
+app.use('/reset', resetRouter);
+
+app.get('/forgot', (req, res) => {
+  res.render('forgot', {page: 'Forgot Password', menuId: 'Forgot Password'})
+});
+
 // app.use('/login', loginRouter);
 // app.use('/register', regRouter);
 
