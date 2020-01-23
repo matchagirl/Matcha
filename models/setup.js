@@ -8,7 +8,12 @@
      email VARCHAR(255) NOT NULL,\
      password VARCHAR(255) NOT NULL,\
      active INT NOT NULL DEFAULT '0',\
-     vcode VARCHAR(255))"
+     vcode VARCHAR(255),\
+     avator VARCHAR(255),\
+     birthdate DATE,\
+     age INT(11),\
+     gender VARCHAR(255),\
+     city VARCHAR(255))"
  con.query(sql, function(err, result){
     if (err)  throw err;
     console.log("Table users created");
@@ -19,11 +24,6 @@
    gender varchar(100) ,\
    sexualpref varchar(100) ,\
    biography varchar(255) ,\
-   extremeSport int(11) ,\
-   outdoor int(11) ,\
-   geekSport int(11) ,\
-   foodie int(11) ,\
-   BDSM int(11) ,\
    avator varchar(255) ,\
    image1 varchar(255) ,\
    image2 varchar(255) ,\
@@ -33,6 +33,12 @@
    if (err) throw err;
    console.log("Table profiles created");
 });
+
+con.query(`CREATE TABLE IF NOT EXISTS locations (id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,\
+   user_id int(11), longitude varchar(255), latitude varchar(255), streetName varchar(255), city varchar(255), postal_code varchar(255))`, (err, result) => {
+      if (err) throw err;
+      console.log("TAble location created");
+   });
 
 con.query(`CREATE TABLE IF NOT EXISTS interest (id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY, name VARCHAR(255))`, (err, result) => {
    if (err) throw err;

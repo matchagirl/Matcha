@@ -75,9 +75,9 @@ color: #1abc9c !important;;
 }
 .listFlex {display: flex; justify-content: center;}
 
-img {
+/* img {
   width: 100%;
-}
+} */
 * {
   box-sizing: border-box;
 }

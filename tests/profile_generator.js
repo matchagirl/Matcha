@@ -1,8 +1,8 @@
 const faker 		= require('faker'),
 	//   util 			= require('util'),
-	  dbc 			= require('../models/connection.js'),
+	  con 			= require('../models/connection.js'),
 	//   ft_util 		= require('../includes/ft_util.js'),
-	  count 		= 5;
+	  count 		= 2;
 
 function generate_user(i) {
 	if (i === count) {
@@ -19,12 +19,13 @@ function generate_user(i) {
 		faker.name.lastName(),				//2
 		faker.internet.email(),				//3
 		'Password1',							//4
-		'1'
+		'1',
+		faker.date.between('1940-01-01', '2002-12-31')				//5
 	];
 	let sql = "SELECT id FROM users WHERE username = ? OR email = ?",
 		id;
 
-	dbc.query(sql, [user[0], user[3]], (err, result) => {
+	con.query(sql, [user[0], user[3]], (err, result) => {
 		if (err) throw err;
 		if (result.length > 0)
 		{
@@ -32,16 +33,24 @@ function generate_user(i) {
 			generate_user(i);
 			return;
 		}
-		sql = "INSERT INTO users (username, firstname, lastname, email, password, active) VALUES (?)";
-		dbc.query(sql, [[...user]], (err, result) => {
+		sql = "INSERT INTO users (username, firstname, lastname, email, password, active, birthdate) VALUES (?)";
+		con.query(sql, [[...user]], (err, result) => {
 			if (err) throw err;
-			sql = "INSERT INTO profiles (userID, gender, sexualpref, biography, avator, image1, image2, image3, image4) VALUES (?)";
 			id = result.insertId;
-			dbc.query(sql, [[
+			 sql = "SELECT *, YEAR(CURDATE()) -YEAR(birthdate) -IF(STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-', MONTH(birthdate), '-', DAY(birthdate)) ,'%Y-%c-%e') > CURDATE(), 1, 0)AS age FROM users WHERE id = '" +id+"'";
+               con.query(sql, function(err, result){
+                  if (err) throw err;
+                //   console.log(result);
+                    sql = "UPDATE users SET age = '"+ result[0].age+"' WHERE id = '"+ result[0].id+"'";
+                     con.query(sql, function(err, result){
+                        if (err) throw err;
+                     })
+               })
+			sql = "INSERT INTO profiles (userID, gender, sexualpref, biography, avator, image1, image2, image3, image4) VALUES (?)";
+			con.query(sql, [[
 					id,
-					['male', 'female'][ranint(1)],		//3
+					[ 'female', 'male', 'female', 'male'][ranint(3)],		//3
 					['both', 'female', 'male'][ranint(2)],	//4
-					// faker.date.between('1940-01-01', '2000-12-31'),				//5
 					faker.lorem.sentence(),		
 					['42.png', 'dog.png', 'test2.jpg', 'test3.jpg', 'lona.png'][ranint(4)],	//4	
 					['42.png', 'dog.png', 'test2.jpg', 'test3.jpg', 'lona.png'][ranint(4)],	//4	
@@ -51,19 +60,46 @@ function generate_user(i) {
 					
 			]], (err, result) => {
 				if (err) throw err;
-				exit();
-				sql = "INSERT INTO locations (lat, lng, street_address, area, state, country, user_id) VALUES (?)";
-				dbc.query(sql, [[
-						faker.address.latitude(),
-						faker.address.longitude(),
-						faker.address.streetAddress() + ' ' + faker.address.streetName(),
-						faker.address.county(),
-						faker.address.state(),
-						faker.address.country(),
-						id
+				// console.log(result);
+				sql = "SELECT avator, gender FROM profiles WHERE id = '"+ result.insertId +"'";
+					con.query(sql, function(err, result){
+						if(err) throw err;
+						// console.log(result)
+						sql = "UPDATE `users` SET `avator` ='"+ result[0].avator +"', gender ='"+ result[0].gender +"' WHERE id ='"+ id +"'";
+							con.query(sql, function(err, result){
+								if (err) throw err
+							})
+
+					})
+				// exit();
+				sql = "INSERT INTO locations (user_id,  longitude, latitude, streetName, city, postal_code) VALUES (?)";
+				con.query(sql, [[
+						id,
+						faker.address.longitude(countryCode="ZA"),
+						faker.address.latitude(countryCode="ZA"),
+						faker.address.streetName(countryCode="ZA"),
+						['johannesburg', 'Cape Town', 'Pretoria', 'Durban', 'Bloemfontein', 'Port Elizabeth'][ranint(5)],
+						// faker.address.state(),
+						faker.address.zipCode(countryCode ="2001"),
 					]], (err, result) => {
 					if (err) throw err;
-					generate_user(i + 1);
+					sql = "SELECT city FROM locations WHERE id ='"+ result.insertId +"'";
+					con.query(sql, function(err, result){
+						if (err) throw err;
+						sql ="UPDATE  users SET city = '"+ result[0].city +"'";
+						con.query(sql, function(err, result){
+							if (err) throw err;
+
+							sql = "INSERT INTO userinterest (userId, inteId) VALUES (?)";
+							con.query(sql, [[
+								id,
+								ranint(13),
+							]], (err, result) => {
+								if (err) throw err;
+								generate_user(i + 1);
+							});
+						});
+					});
 				});
 			});
 		});
