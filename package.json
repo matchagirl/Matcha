@@ -1,0 +1,28 @@
+{
+  "name": "nodeweb",
+  "version": "0.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^3.0.7",
+    "body-parser": "^1.19.0",
+    "ejs": "^2.7.4",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.1.6",
+    "express-session": "^1.17.0",
+    "express-sessions": "^1.0.6",
+    "express-validator": "^6.3.1",
+    "match": "^1.2.9",
+    "mysql": "^2.18.0",
+    "nodemailer": "^6.4.2",
+    "regex": "^0.1.1",
+    "req-flash": "0.0.3",
+    "uniqid": "^5.2.0",
+    "validator": "^12.1.0"
+  },
+  "devDependencies": {},
+  "description": ""
+}
