@@ -105,18 +105,18 @@ router.login = function (req, res) {
                         })
                      })
                   }
-
-                  // var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
-                  // con.query(sql, function (err, results) {
-                  //    console.log(results);
-                  //    if (err) throw err;
-                  //    var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "'";
-                  //    con.query(sql, function (err, results) {
-                  //       results.forEach(function (iterm) {
-                  //          users.push(iterm.id);
-                  //       })
-                  //    })
-                  // })
+                  // console.log(sess.userId);
+                  var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
+                  con.query(sql, function (err, results) {
+                     // console.log(results);
+                     if (err) throw err;
+                     var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "'";
+                     con.query(sql, function (err, results) {
+                        results.forEach(function (iterm) {
+                           users.push(iterm.id);
+                        })
+                     })
+                  })
 
                   var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
                   con.query(sql, function (err, results) {

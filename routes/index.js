@@ -83,18 +83,22 @@ router.get('/update2', function(req, res, next){
 router.post('/saveLocation', function (req, res, next) {
   var address = req.body;
   var sess = req.session
-  // console.log(sess.userId);
+  // console.log(address);
 	//change the user id to the one in the session or something
 	con.query("SELECT * FROM locations WHERE user_id = '" + sess.userId +"'", (err, results) => {
-		if (err)
-      res.sendStatus(500);
-      else if (!results) {
-      // console.log(results); 
-			con.query(`INSERT INTO locations (user_id, Longitude, Latitude,StreetName,City,postal_code) VALUES("${sess.userId}", "${address.lon}", "${address.lat}","${address.street}","${address.city}","${address.postal_code}")`);
+    if (err){
+    // console.log(err);
+    res.sendStatus(500);
+  } else if (results.length === 0) {
+      con.query(`INSERT INTO locations (user_id, Longitude, Latitude,StreetName,City,postal_code) VALUES("${sess.userId}", "${address.lon}", "${address.lat}","${address.street}","${address.city}","${address.postal_code}")`);
+      // alert("no");
+      con.query(`UPDATE users SET city = "${address.city}"`);
 			res.sendStatus(200);
-		} else {
-			con.query(`UPDATE locations SET user_id = "${sess.userId}", longitude = "${address.lon}", latitude = "${address.lat}", StreetName = "${address.street}",City = "${address.city}",postal_code = "${address.postal_code}" WHERE user_id ="${sess.userId}"`);
-			res.sendStatus(200);
+	} else {
+      // console.log("lona ");
+      con.query(`UPDATE locations SET user_id = "${sess.userId}", longitude = "${address.lon}", latitude = "${address.lat}", StreetName = "${address.street}",City = "${address.city}",postal_code = "${address.postal_code}" WHERE user_id ="${sess.userId}"`);
+      con.query(`UPDATE users SET city = "${address.city}"`);
+      res.sendStatus(200);
 		}
 	});
 });
@@ -103,6 +107,5 @@ router.post('/saveLocation', function (req, res, next) {
 //   console.log("you are here");
 //   res.render('profile', {page:'MATCHA', menuId:'MATCHA'});
 // });
-
 
 module.exports = router;
