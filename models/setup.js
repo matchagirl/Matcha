@@ -13,7 +13,10 @@
      birthdate DATE,\
      age INT(11),\
      gender VARCHAR(255),\
-     city VARCHAR(255))"
+     city VARCHAR(255),\
+     fame INT(11),\
+     connection VARCHAR(255),\
+     lastseen DATETIME)"
  con.query(sql, function(err, result){
     if (err)  throw err;
     console.log("Table users created");
@@ -48,4 +51,13 @@ con.query(`CREATE TABLE IF NOT EXISTS interest (id int(11) NOT NULL AUTO_INCREME
 con.query(`CREATE TABLE IF NOT EXISTS userinterest (id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY, userId int(11), inteId int(11))`, (err, result) => {
    if (err) throw err;
    console.log("Table userinterest created");
+});
+con.query(`CREATE TABLE IF NOT EXISTS views(user_id int(11) NOT NULL,viewer varchar(255),viewee varchar(255) NOT NULL)`, (err, result) => {
+   if (err) throw err;
+   console.log("Table views created");
+});
+
+con.query(`CREATE TABLE IF NOT EXISTS likes(user_id int(11) NOT NULL,liker varchar(255),likes varchar(255) NOT NULL, likes_back boolean)`, (err, result) => {
+   if (err) throw err;
+   console.log("Table likes created");
 });

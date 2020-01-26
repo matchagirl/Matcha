@@ -53,7 +53,8 @@
                 <h5 class="card-title"><%=suggest[i].username%></h5>
                 <p class="card-text"><%=suggest[i].age%></p>
                 <p class="card-text"><%=suggest[i].gender%></p>
-                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                <p class="card-text"><%=suggest[i].city%></p>
+                <a class="card-text" href ="http://localhost:8081/view?uid=<%=suggest[i].id%>&username=<%=suggest[i].username %>"><small class="text-muted">View</small></a>
               </div>
             </div>
           </div>
@@ -62,15 +63,15 @@
       <% } %>
       <%} else{%>
       <div class="col-sm-4">
-        <p>"Don't wait for the perfect moment, take a moment and make it perfetct." </br>--->Zoey Saywad2</p>
+        <p>"Don't wait for the perfect moment, take a moment and make it perfetct." </br>--->Zoey Saywad</p>
         <img src="images/connected.jpg" alt="pic" height="500px" width="500px">
       </div>
       <div class="col-sm-4">
-        <p> "Where ever you go, go with all your heart" </br> --->Confucius2</p>
+        <p> "Where ever you go, go with all your heart" </br> --->Confucius</p>
         <img src="images/couple.jpeg" alt="pic" height="500px" width="500px">
       </div>
       <div class="col-sm-4">
-        <p>"In the end we only regret chances we didn't take!" </br> --->Lewis Carroll2 </p>
+        <p>"In the end we only regret chances we didn't take!" </br> --->Lewis Carroll</p>
         <img src="images/couple2.jpeg" alt="pic" height="500px" width="500px">
       </div>
       <%}%>
