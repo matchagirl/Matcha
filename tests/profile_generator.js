@@ -86,7 +86,7 @@ function generate_user(i) {
 					sql = "SELECT city FROM locations WHERE id ='"+ result.insertId +"'";
 					con.query(sql, function(err, result){
 						if (err) throw err;
-						sql ="UPDATE  users SET city = '"+ result[0].city +"'";
+						sql ="UPDATE  users SET city = '"+ result[0].city +"' WHERE id ='"+ id+"'";
 						con.query(sql, function(err, result){
 							if (err) throw err;
 

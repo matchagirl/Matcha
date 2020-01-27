@@ -2,6 +2,12 @@ var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
 const con = require('../models/connection.js');
+var validator = require('validator');
+var bcrypt = require('bcrypt');
+var nodemailer = require('nodemailer');
+var uniqid = require('uniqid');
+const saltRounds = 10;
+var regex = require('regex');
 // var fileUpload = require('express-fileupload');
 
 
@@ -12,9 +18,33 @@ router.get('/', function (req, res, next) {
 
 
 //---------------------------------------------register page call------------------------------------------------------
+function sendEmail(name, vcode, email) {
+   var text = "Welcome to matcha , we are here to help you connect with your soul mate, please click on the link to activate your account http://localhost:8081/activate?name=" + name + "&vcode=" + vcode;
+   transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+         user: 'matchamatch2@gmail.com',
+         pass: 'matchme@123'
+      }
+   });
+   mailOptions = {
+      from: '"Matcha" <mmodisad@student.wethinkcode.co.za>',
+      to: email,
+      subject: 'Matcha registration',
+      text: text,
+      html: '<a>' + text + '</a>'
+   };
+   transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+         return console.log(error);
+      }
+      console.log('Message sent: ' + info.response);
+   });
+}
+
 
 router.signup = function (req, res) {
-   var message = '';
+   message = '';
    console.log("register here");
    if (req.method == "POST") {
       var post = req.body;
@@ -24,301 +54,352 @@ router.signup = function (req, res) {
       var email = post.email;
       var pass = post.password;
       var birthd = post.birthdate;
-      // var mob= post.mob_no;
+      var vcode = uniqid();
 
-      var sql = "INSERT INTO `users`(`username`,`firstname`,`lastname`,`email`, `password`, `birthdate`) VALUES ('" + name + "','" + fname + "','" + lname + "','" + email + "','" + pass + "', '" + birthd + "')";
-      con.query(sql, function (err, result) {
-         // console.log(result);
-         // console.log(sql);
-         var sql = "SELECT *, YEAR(CURDATE()) -YEAR(birthdate) -IF(STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-', MONTH(birthdate), '-', DAY(birthdate)) ,'%Y-%c-%e') > CURDATE(), 1, 0)AS age FROM users WHERE id = '" + result.insertId + "'";
+
+      if (name == '' || fname == '' || lname == '' || email == '' || pass == '' || birthd == '') {
+         message = "All fileds are required.";
+         res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+         return false;
+
+      } else if (validator.isLength(fname, { min: 3 }) == false) {
+         message = "Firstname requires minimum of 3 characters";
+         res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+         return true;
+      } else if (validator.isLength(lname, { min: 3 }) == false) {
+         message = "Last Name requires minimum of 3 characters";
+         res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+         return true;
+      } else if (validator.isLength(pass, { min: 6 }) == false) {
+         message = "Password must be atleast 6 characters";
+         res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+         return true;
+      } else if (validator.isEmail(email) == false) {
+         message = "Invalid email address";
+         res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+      }
+
+      // Store hash in your password DB.
+      bcrypt.hash(pass, saltRounds, function (err, hash) {
+         var sql = "INSERT INTO `users`(`username`,`firstname`,`lastname`,`email`, `password`,`vcode`, `birthdate` ) VALUES ('" + name + "','" + fname + "','" + lname + "','" + email + "','" + hash + "','" + vcode + "','" + birthd + "')";
+         // var query = con.query(sql, function(err, result) {
+         //   }); 
          con.query(sql, function (err, result) {
-            if (err) throw err;
-            var sql = "UPDATE users SET age = '" + result[0].age + "' WHERE id = '" + result[0].id + "'";
+            // console.log(result);
+            // console.log(sql);
+            var sql = "SELECT *, YEAR(CURDATE()) -YEAR(birthdate) -IF(STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-', MONTH(birthdate), '-', DAY(birthdate)) ,'%Y-%c-%e') > CURDATE(), 1, 0)AS age FROM users WHERE id = '" + result.insertId + "'";
             con.query(sql, function (err, result) {
                if (err) throw err;
-               message = "Succesfully! Your account has been created.";
-               res.render('index', { page: 'MATCHA', menuId: 'MATCHA' });
+               var sql = "UPDATE users SET age = '" + result[0].age + "' WHERE id = '" + result[0].id + "'";
+               con.query(sql, function (err, result) {
+                  if (err) throw err;
+                  // message = "Succesfully! Your account has been created.";
+                  sendEmail(name, vcode, email);
+                  res.render('verify.ejs', { error: message })
+                  // res.render('index', { page: 'MATCHA', menuId: 'MATCHA' });
+               })
             })
-         })
 
+         });
+
+         // message = "Succesfully! Your account has been created.";
+         // res.render('signup.ejs', { error: message });
       });
+      //message = "A confirmation email has been sent to you";
 
    } else {
-      res.render('signup');
+      res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
    }
 };
 
 //-----------------------------------------------login page call------------------------------------------------------
 router.login = function (req, res) {
-   // console.log("log in here");
-   var message = '';
+   var message;
    var sess = req.session;
-  
+
+   // if (sess.loggedin){   
+   //    res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username, data: sess.data});
+   // }
+
+
    if (req.method == "POST") {
       var post = req.body;
       var name = post.username;
-      var pass = post.password;
+      var unhash_pass = post.password;
 
-      if (sess.loggedin) {
-         if (!sess.suggest)
-            sess.suggest = [];
-         // res.render('homepage', {page:'MATCHA', menuId:'MATCHA', username : sess.user.username, data: sess.data});
-         res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+      var sql = `SELECT password FROM users WHERE username = '${name}' AND active = 1`;
 
-      }
-
-      const users = [];
-      var sql = "SELECT id, firstname, lastname, username FROM `users` WHERE `username`='" + name + "' and password = '" + pass + "'";
+      //gets the hashed password using the username
       con.query(sql, function (err, results) {
-         if (results.length) {
-            sess.userId = results[0].id;
-            sess.user = results[0];
-            sess.loggedin = true;
-            var sql = "SELECT*FROM `profiles` WHERE `userID` = '" + sess.userId + "'";
-            con.query(sql, function (err, results) {
-               if (results.length) {
-                  sess.data = results[0];
-                  if (sess.data.sexualpref == "male") {
-                     console.log("here")
-                     var sql = "SELECT * FROM profiles WHERE gender = 'male' AND sexualpref = '" + sess.data.gender + "' OR sexualpref ='both'";
-                     con.query(sql, function (err, results) {
-                        results.forEach(function (iterm) {
-                           users.push(iterm.userID);
-                           // console.log(users);
-                        })
+         var hash_pass;
+         if (err) {
+            message = err;
+            res.render('login', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
+         } else if (results.length) {
+            hash_pass = results[0].password;
 
-                        var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
+            //compares hashed and unhashed passwrds to see if they match then return true if they are and false if they are not
+            bcrypt.compare(unhash_pass, hash_pass, function (err, results) {
+               if (err) {
+                  message = err;
+                  res.render('login', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
+               } else if (results) {
+                  var sql = `SELECT id, firstname, lastname, username FROM users WHERE username = '${name}'`;
+                  con.query(sql, function (err, results) {
+                     if (err) {
+                        message = err;
+                        res.render('login', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
+                     } else {
+                        sess.userId = results[0].id;
+                        sess.user = results[0];
+                        sess.loggedin = true;
+                        var sql = "SELECT*FROM `profiles` WHERE `userID` = '" + sess.userId + "'";
                         con.query(sql, function (err, results) {
-                           // console.log(results);
-                           // console.log(users);
-                           if (err) throw err;
-                           var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
-                           con.query(sql, [[...users]], function (err, results) {
-                              // console.log(results);
-                              results.forEach(function (iterm) {
-                                 users.push(iterm.id);
-                              })
-                              // console.log(users);
-
-                              var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
-                              con.query(sql, function (err, results) {
-                                 var userinterests = results;
-                                 const inteId = [];
-                                 userinterests.forEach(function (iterm) {
-                                    inteId.push(iterm.inteId);
-                                 });
-                                 // console.log(inteId);
-                                 var sql = "SELECT * FROM interest WHERE id in (?)";
-                                 con.query(sql, [[...inteId]], function (err, results) {
-                                    var interest = results;
-                                    const inte = [];
-                                    interest.forEach(function (iterm) {
-                                       inte.push(iterm.name);
-                                    });
-                                    sess.post = inte;
-                                    var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
-                                    console.log(users)
-                                    // console.log(sql);
-                                    con.query(sql, [[...inteId]], function (err, results) {
-                                       var peepz = results;
-                                       if (err) {
-                                          console.log(err);
-                                       }
-                                       peepz.forEach(function (iterm) {
-                                          users.push(iterm.userId);
-                                       })
+                           if (results.length) {
+                              sess.data = results[0];
+                              if (sess.data.sexualpref == "male") {
+                                 console.log("here")
+                                 var sql = "SELECT * FROM profiles WHERE gender = 'male' AND sexualpref = '" + sess.data.gender + "' OR sexualpref ='both'";
+                                 con.query(sql, function (err, results) {
+                                    results.forEach(function (iterm) {
+                                       users.push(iterm.userID);
                                        // console.log(users);
-                                       var sql = "SELECT * FROM profiles  WHERE gender = 'male' AND sexualpref != 'female' AND userID in (?)"
+                                    })
+
+                                    var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
+                                    con.query(sql, function (err, results) {
+                                       // console.log(results);
+                                       // console.log(users);
+                                       if (err) throw err;
+                                       var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
                                        con.query(sql, [[...users]], function (err, results) {
-                                          if (err) throw err;
                                           // console.log(results);
-                                          const usrs = [];
                                           results.forEach(function (iterm) {
-                                             usrs.push(iterm.userID);
+                                             users.push(iterm.id);
                                           })
-                                          var sql = "SELECT*FROM users WHERE id != '" + sess.userId + "' AND id in (?)";
-                                          con.query(sql, [[...usrs]], function (err, results) {
-                                             var suggest = results;
-                                             // console.log(suggest);
-                                             sess.suggest = suggest;
-                                             // console.log(sess.suggest);
-                                             res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+                                          // console.log(users);
+
+                                          var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
+                                          con.query(sql, function (err, results) {
+                                             var userinterests = results;
+                                             const inteId = [];
+                                             userinterests.forEach(function (iterm) {
+                                                inteId.push(iterm.inteId);
+                                             });
+                                             // console.log(inteId);
+                                             var sql = "SELECT * FROM interest WHERE id in (?)";
+                                             con.query(sql, [[...inteId]], function (err, results) {
+                                                var interest = results;
+                                                const inte = [];
+                                                interest.forEach(function (iterm) {
+                                                   inte.push(iterm.name);
+                                                });
+                                                sess.post = inte;
+                                                var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
+                                                console.log(users)
+                                                // console.log(sql);
+                                                con.query(sql, [[...inteId]], function (err, results) {
+                                                   var peepz = results;
+                                                   if (err) {
+                                                      console.log(err);
+                                                   }
+                                                   peepz.forEach(function (iterm) {
+                                                      users.push(iterm.userId);
+                                                   })
+                                                   // console.log(users);
+                                                   var sql = "SELECT * FROM profiles  WHERE gender = 'male' AND sexualpref != 'female' AND userID in (?)"
+                                                   con.query(sql, [[...users]], function (err, results) {
+                                                      if (err) throw err;
+                                                      // console.log(results);
+                                                      const usrs = [];
+                                                      results.forEach(function (iterm) {
+                                                         usrs.push(iterm.userID);
+                                                      })
+                                                      var sql = "SELECT*FROM users WHERE id != '" + sess.userId + "' AND id in (?)";
+                                                      con.query(sql, [[...usrs]], function (err, results) {
+                                                         var suggest = results;
+                                                         // console.log(suggest);
+                                                         sess.suggest = suggest;
+                                                         // console.log(sess.suggest);
+                                                         res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+                                                      })
+                                                   })
+                                                })
+                                             })
                                           })
                                        })
                                     })
                                  })
-                              })
-                           })
-                        })
-                     })
-                  }
-                  else if (sess.data.sexualpref == "female") {
-                     var sql = "SELECT * FROM profiles WHERE gender = 'female' AND sexualpref = '" + sess.data.gender + "' OR sexualpref = 'both'";
-                     con.query(sql, function (err, results) {
-                        results.forEach(function (iterm) {
-                           users.push(iterm.userID);
-                        })
-                        var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
-                        con.query(sql, function (err, results) {
-                           // console.log(results);
-                           // console.log(users);
-                           if (err) throw err;
-                           var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
-                           con.query(sql, [[...users]], function (err, results) {
-                              // console.log(results);
-                              results.forEach(function (iterm) {
-                                 users.push(iterm.id);
-                              })
-                              // console.log(users);
-
-                              var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
-                              con.query(sql, function (err, results) {
-                                 var userinterests = results;
-                                 const inteId = [];
-                                 userinterests.forEach(function (iterm) {
-                                    inteId.push(iterm.inteId);
-                                 });
-                                 // console.log(inteId);
-                                 var sql = "SELECT * FROM interest WHERE id in (?)";
-                                 con.query(sql, [[...inteId]], function (err, results) {
-                                    var interest = results;
-                                    const inte = [];
-                                    interest.forEach(function (iterm) {
-                                       inte.push(iterm.name);
-                                    });
-                                    sess.post = inte;
-                                    var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
-                                    // console.log(sql);
-                                    con.query(sql, [[...inteId]], function (err, results) {
-                                       var peepz = results;
-                                       if (err) {
-                                          console.log(err);
-                                       }
-                                       peepz.forEach(function (iterm) {
-                                          users.push(iterm.userId);
-                                       })
+                              }
+                              else if (sess.data.sexualpref == "female") {
+                                 var sql = "SELECT * FROM profiles WHERE gender = 'female' AND sexualpref = '" + sess.data.gender + "' OR sexualpref = 'both'";
+                                 con.query(sql, function (err, results) {
+                                    results.forEach(function (iterm) {
+                                       users.push(iterm.userID);
+                                    })
+                                    var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
+                                    con.query(sql, function (err, results) {
+                                       // console.log(results);
                                        // console.log(users);
-                                       var sql = "SELECT * FROM profiles  WHERE gender != 'male' AND sexualpref != 'female' AND userID in (?)"
+                                       if (err) throw err;
+                                       var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
                                        con.query(sql, [[...users]], function (err, results) {
-                                          if (err) throw err;
                                           // console.log(results);
-                                          const usrs = [];
                                           results.forEach(function (iterm) {
-                                             usrs.push(iterm.userID);
-                                             // console.log(usrs)
+                                             users.push(iterm.id);
                                           })
-                                          var sql = "SELECT*FROM users WHERE id != '" + sess.userId + "' AND id in (?)";
-                                          con.query(sql, [[...usrs]], function (err, results) {
-                                             var suggest = results;
-                                             // console.log(suggest);
-                                             sess.suggest = suggest;
-                                             // console.log(sess.suggest);
-                                             res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+                                          // console.log(users);
+
+                                          var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
+                                          con.query(sql, function (err, results) {
+                                             var userinterests = results;
+                                             const inteId = [];
+                                             userinterests.forEach(function (iterm) {
+                                                inteId.push(iterm.inteId);
+                                             });
+                                             // console.log(inteId);
+                                             var sql = "SELECT * FROM interest WHERE id in (?)";
+                                             con.query(sql, [[...inteId]], function (err, results) {
+                                                var interest = results;
+                                                const inte = [];
+                                                interest.forEach(function (iterm) {
+                                                   inte.push(iterm.name);
+                                                });
+                                                sess.post = inte;
+                                                var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
+                                                // console.log(sql);
+                                                con.query(sql, [[...inteId]], function (err, results) {
+                                                   var peepz = results;
+                                                   if (err) {
+                                                      console.log(err);
+                                                   }
+                                                   peepz.forEach(function (iterm) {
+                                                      users.push(iterm.userId);
+                                                   })
+                                                   // console.log(users);
+                                                   var sql = "SELECT * FROM profiles  WHERE gender != 'male' AND sexualpref != 'female' AND userID in (?)"
+                                                   con.query(sql, [[...users]], function (err, results) {
+                                                      if (err) throw err;
+                                                      // console.log(results);
+                                                      const usrs = [];
+                                                      results.forEach(function (iterm) {
+                                                         usrs.push(iterm.userID);
+                                                         // console.log(usrs)
+                                                      })
+                                                      var sql = "SELECT*FROM users WHERE id != '" + sess.userId + "' AND id in (?)";
+                                                      con.query(sql, [[...usrs]], function (err, results) {
+                                                         var suggest = results;
+                                                         // console.log(suggest);
+                                                         sess.suggest = suggest;
+                                                         // console.log(sess.suggest);
+                                                         res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+                                                      })
+                                                   })
+                                                })
+                                             })
                                           })
                                        })
                                     })
                                  })
-                              })
-                           })
-                        })
-                     })
-                  }
-                  else {
-                     var sql = "SELECT * FROM profiles WHERE sexualpref = '" + sess.data.gender + "'";
-                     con.query(sql, function (err, results) {
-                        results.forEach(function (iterm) {
-                           users.push(iterm.userID);
-                           // console.log(users);
-                        })
-
-                        var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
-                        con.query(sql, function (err, results) {
-                           // console.log(results);
-                           // console.log(users);
-                           if (err) throw err;
-                           var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
-                           con.query(sql, [[...users]], function (err, results) {
-                              // console.log(results);
-                              results.forEach(function (iterm) {
-                                 users.push(iterm.id);
-                              })
-                              // console.log(users);
-
-                              var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
-                              con.query(sql, function (err, results) {
-                                 var userinterests = results;
-                                 const inteId = [];
-                                 userinterests.forEach(function (iterm) {
-                                    inteId.push(iterm.inteId);
-                                 });
-                                 // console.log(inteId);
-                                 var sql = "SELECT * FROM interest WHERE id in (?)";
-                                 con.query(sql, [[...inteId]], function (err, results) {
-                                    var interest = results;
-                                    const inte = [];
-                                    interest.forEach(function (iterm) {
-                                       inte.push(iterm.name);
-                                    });
-                                    sess.post = inte;
-                                    var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
-                                    // console.log(users)
-                                    // console.log(sql);
-                                    con.query(sql, [[...inteId]], function (err, results) {
-                                       var peepz = results;
-                                       if (err) {
-                                          console.log(err);
-                                       }
-                                       peepz.forEach(function (iterm) {
-                                          users.push(iterm.userId);
-                                       })
+                              }
+                              else {
+                                 var sql = "SELECT * FROM profiles WHERE sexualpref = '" + sess.data.gender + "'";
+                                 con.query(sql, function (err, results) {
+                                    results.forEach(function (iterm) {
+                                       users.push(iterm.userID);
                                        // console.log(users);
-                                       var sql = "SELECT * FROM profiles WHERE userID in (?)"
+                                    })
+
+                                    var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
+                                    con.query(sql, function (err, results) {
+                                       // console.log(results);
+                                       // console.log(users);
+                                       if (err) throw err;
+                                       var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
                                        con.query(sql, [[...users]], function (err, results) {
-                                          if (err) throw err;
                                           // console.log(results);
-                                          const usrs = [];
                                           results.forEach(function (iterm) {
-                                             usrs.push(iterm.userID);
+                                             users.push(iterm.id);
                                           })
-                                          // console.log(usrs);
-                                          var sql = "SELECT*FROM users WHERE id != '" +sess.userId + "' AND id in (?)";
-                                          con.query(sql, [[...usrs]], function (err, results) {
-                                             var suggest = results;
-                                             // console.log(suggest);
-                                             sess.suggest = suggest;
-                                             // console.log(sess.suggest);
-                                             res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+                                          // console.log(users);
+
+                                          var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
+                                          con.query(sql, function (err, results) {
+                                             var userinterests = results;
+                                             const inteId = [];
+                                             userinterests.forEach(function (iterm) {
+                                                inteId.push(iterm.inteId);
+                                             });
+                                             // console.log(inteId);
+                                             var sql = "SELECT * FROM interest WHERE id in (?)";
+                                             con.query(sql, [[...inteId]], function (err, results) {
+                                                var interest = results;
+                                                const inte = [];
+                                                interest.forEach(function (iterm) {
+                                                   inte.push(iterm.name);
+                                                });
+                                                sess.post = inte;
+                                                var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
+                                                // console.log(users)
+                                                // console.log(sql);
+                                                con.query(sql, [[...inteId]], function (err, results) {
+                                                   var peepz = results;
+                                                   if (err) {
+                                                      console.log(err);
+                                                   }
+                                                   peepz.forEach(function (iterm) {
+                                                      users.push(iterm.userId);
+                                                   })
+                                                   // console.log(users);
+                                                   var sql = "SELECT * FROM profiles WHERE userID in (?)"
+                                                   con.query(sql, [[...users]], function (err, results) {
+                                                      if (err) throw err;
+                                                      // console.log(results);
+                                                      const usrs = [];
+                                                      results.forEach(function (iterm) {
+                                                         usrs.push(iterm.userID);
+                                                      })
+                                                      // console.log(usrs);
+                                                      var sql = "SELECT*FROM users WHERE id != '" + sess.userId + "' AND id in (?)";
+                                                      con.query(sql, [[...usrs]], function (err, results) {
+                                                         var suggest = results;
+                                                         // console.log(suggest);
+                                                         sess.suggest = suggest;
+                                                         // console.log(sess.suggest);
+                                                         res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+                                                      })
+                                                   })
+                                                })
+                                             })
                                           })
                                        })
                                     })
                                  })
-                              })
-                           })
-                        })
-                     })
-                  }
+                              }
+                           }
+                           else
+                              res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: [] });
+                        });
+                        // console.log(sess.userId);
+                        // console.log(sess.user.firstname);
+                     }
+                  });
+               } else {
+                  message = 'invalid login details';
+                  res.render('login', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
                }
-               else
-                  res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: [] });
             });
-            // console.log(sess.userId);
-            // console.log(sess.user.firstname);
+         } else {
+            message = 'invalid login details';
+            res.render('login', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
          }
-         else {
-            message = 'Wrong Credentials.';
-            // res.render('index.ejs',{message: message});
-            res.render('index', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
-
-         }
-
       });
    } else {
-      // res.render('index.ejs',{message: message});
-      res.render('index', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
-
+      message = 'an error occured';
+      res.render('login', { page: 'MATCHA', menuId: 'MATCHA', msg: message });
    }
-
 };
+
 
 //-----------------------------------------------profile update------------------------------------------------------
 
@@ -1217,20 +1298,5 @@ router.update2 = function (req, res) {
    }
 };
 
-// //-----------------------------------------------famerate------------------------------------------------------------
-// function fame(req, res){
-//    var sess = req.session;
-//    con.query(`SELECT * FROM views WHERE viewee = "${sess.user.username}"`, (err, results) => {
-//      var  v = results.count
-//      con.query(`SELECT * FROM likes WHERE likes = "${sess.user.username}"`, (err, results) =>{
-//        var l = results.count
-//        con.query(`SELECT * FROM users`, (err, results) => {
-//          var u = results.count
-//          var fame = (v + l)/ u * 100 
-//           return (fame);
-//        })
-//      })
-//    })
-//  }
 
 module.exports = router;

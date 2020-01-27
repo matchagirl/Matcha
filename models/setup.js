@@ -14,7 +14,7 @@
      age INT(11),\
      gender VARCHAR(255),\
      city VARCHAR(255),\
-     fame INT(11),\
+     fame VARCHAR(35),\
      connection VARCHAR(255),\
      lastseen DATETIME)"
  con.query(sql, function(err, result){
