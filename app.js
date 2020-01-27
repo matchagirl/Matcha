@@ -12,6 +12,7 @@ var loginRouter = require('./routes/login');
 var regRouter = require('./routes/register');
 var forgotRouter = require('./routes/forgot');
 var resetRouter = require('./routes/reset');
+var updatePassRouter = require('./routes/update_pass');
 
 
 var app = express();
@@ -44,8 +45,10 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/forgot', forgotRouter);
 app.use('/reset', resetRouter);
+// app.use('/update_pass', updatePassRouter);
 
 app.get('/forgot', (req, res) => {
+  console.log('hello')
   res.render('forgot', {page: 'Forgot Password', menuId: 'Forgot Password'})
 });
 
@@ -79,10 +82,10 @@ app.use(function(err, req, res, next) {
 });
 
 
-app.listen(3000, (err) => {
+app.listen(3001, (err) => {
   if (err) throw err;
   else {
-    console.log("Server running on port: 8080");
+    console.log("Server running on port: 3001");
   }
 });
 

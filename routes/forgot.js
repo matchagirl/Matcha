@@ -4,6 +4,8 @@ const con = require('../models/connection.js');
 var nodemailer = require('nodemailer');
 var sanitizer = require('sanitizer');
 
+
+
 app.post('/', function (require, response) {
     var email = sanitizer.sanitize(require.body.email);
     console.log(email);
@@ -29,7 +31,7 @@ app.post('/', function (require, response) {
                 subject: 'reset password',
                 html: `
                         <h1>Click below link to reset password!</h1>
-                        <a href=http://localhost:3000/reset?email=${require.body.email}&vcode=${vcode}>Reset password<a>
+                        <a href=http://localhost:3001/reset?email=${require.body.email}&vcode=${vcode}>Reset password<a>
                         `
             };
             
@@ -38,6 +40,7 @@ app.post('/', function (require, response) {
                 console.log(error);
             } else {
                 console.log('Email sent: ' + info.response);
+                response.send(`<p><strong>Please check your email for further instructions</strong></p>`);
             }
             });
         }
