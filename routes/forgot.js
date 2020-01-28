@@ -1,5 +1,4 @@
 var app = require('express').Router();
-var mysql      = require('mysql');
 const con = require('../models/connection.js');
 var nodemailer = require('nodemailer');
 var sanitizer = require('sanitizer');
@@ -8,7 +7,6 @@ var sanitizer = require('sanitizer');
 
 app.post('/', function (require, response) {
     var email = sanitizer.sanitize(require.body.email);
-    console.log(email);
 
     sql = `SELECT vcode FROM users WHERE email = '${email}'`;
     con.query(sql, function(err, results){
@@ -37,12 +35,13 @@ app.post('/', function (require, response) {
             
             transporter.sendMail(mailOptions, function(error, info){
             if (error) {
-                console.log(error);
+                response.send(error);
             } else {
-                console.log('Email sent: ' + info.response);
                 response.send(`<p><strong>Please check your email for further instructions</strong></p>`);
             }
             });
+        } else {
+            response.send(email + ' does not exist');
         }
     });
 });

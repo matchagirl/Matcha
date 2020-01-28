@@ -12,7 +12,6 @@ var loginRouter = require('./routes/login');
 var regRouter = require('./routes/register');
 var forgotRouter = require('./routes/forgot');
 var resetRouter = require('./routes/reset');
-var updatePassRouter = require('./routes/update_pass');
 
 
 var app = express();

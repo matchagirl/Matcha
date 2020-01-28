@@ -1,8 +1,8 @@
 var app = require('express').Router();
-var mysql      = require('mysql');
 const con = require('../models/connection.js');
-var nodemailer = require('nodemailer');
-var sanitizer = require('sanitizer');
+var passwordValidator = require('password-validator');
+const bcrypt = require('bcrypt');
+var schema = new passwordValidator();
 
 app.get('/', function (require, response) {
     var sql = 'select id from users where email = ? and vcode = ?';
@@ -19,19 +19,43 @@ app.get('/', function (require, response) {
 });
 
 app.post('/', (require, response) => {
-    var id = require.body.id;
-    var sql = 'update users set password = ? where id = ?';
-    con.query(sql, [require.body.pass1,id], (err, res) => {
-        if(err){
-            response.send(`error: ${err}`);
-        } else if(res.length){
-            var id = results[0].id;
-            response.send(res);
-        } else {
-            console.log(res)
-            response.render('reset', {page: 'RESET', menuId:'RESET', id, msg: res});
-        }
-    });
+    var id = require.body.id,
+        pass1 = require.body.pass1,
+        pass2 = require.body.pass2;
+
+    schema
+        .is().min(6)
+        .has().uppercase()
+        .has().lowercase()
+        .has().digits()
+        .has().symbols();
+
+    if (pass1 !== pass2){
+        response.render('reset', {page: 'RESET', menuId:'RESET', id, msg: 'Passwords do not match'});
+    } else if (schema.validate(pass1) === false) {
+        msg = `Password needs to meet: ${schema.validate(pass1, { list: true })}`;
+        response.render('reset', {page: 'RESET', menuId:'RESET', id, msg});
+    } else {
+        const saltRounds = 10;
+        bcrypt.hash(pass1, saltRounds, function(err, hash) {
+            if (err){
+                msg = err;
+                response.render('reset', {page: 'RESET', menuId:'RESET', id, msg});
+            } else {
+                var pass = hash;
+                var sql = 'update users set password = ? where id = ?';
+                con.query(sql, [pass,id], (err, res) => {
+                    if(err){
+                        response.send(`error: ${err}`);
+                    } else {
+                        var sql = 'update users set vcode = ? where id = ?';
+                        con.query(sql, [null,id], (err, res) => {});
+                        response.render('login', {page: 'LOGIN', menuId:'LOGIN', msg: 'Password updated successfully'});
+                    }
+                });
+            }
+        });
+    } 
 });
 
 module.exports = app;
