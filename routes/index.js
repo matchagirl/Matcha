@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var mysql = require('mysql');
 const con = require('../models/connection.js');
+var nodemailer = require('nodemailer');
 
 // /* GET home page. */
 // router.get('/', function(req, res, next) {
@@ -45,20 +46,21 @@ router.get('/register', function (req, res, next) {
 /* GET logout page*/
 router.get('/logout', function (req, res, next) {
   var sess = req.session;
-  console.log(sess);
+  // console.log(sess);
   // var rate = fame();
   con.query(`SELECT * FROM views WHERE viewee = "${sess.user.username}"`, (err, results) => {
     var v = results.length
     con.query(`SELECT * FROM likes WHERE likes = "${sess.user.username}"`, (err, results) => {
       var l = results.length
-      con.query(`SELECT * FROM users`, (err, results) => {
+      con.query(`SELECT * FROM users WHERE active = "1"`, (err, results) => {
         var u = results.length
         var fame = Math.trunc([(v + l) / u] * 100) + "%"
         //  console.log(fame);
-        // con.query(`UPDATE users SET frate = "${fame}" WHERE `)
+        con.query(`UPDATE users SET fame = "${fame}", connection = "offline", lastseen = CURRENT_TIMESTAMP WHERE username = "${sess.user.username}"`)
       })
     })
   })
+  // con.query(``)
   req.session.destroy(function (err) {
     if (err) {
       console.log(err);
@@ -121,11 +123,36 @@ router.post('/saveLocation', function (req, res, next) {
   });
 });
 
+function sendEmail(name, email) {
+  var text = "Hello there your  matcha profile was viewed by" + " " + name
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'matchamatch2@gmail.com',
+      pass: 'matchme@123'
+    }
+  });
+  mailOptions = {
+    from: '"Matcha" <mmodisad@student.wethinkcode.co.za>',
+    to: email,
+    subject: 'Matcha Notification',
+    text: text,
+    html: '<a>' + text + '</a>'
+  };
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      return console.log(error);
+    }
+    console.log('Message sent: ' + info.response);
+  });
+}
+
 router.get('/view', function (req, res, next) {
   // console.log("Here Here");
   var sess = req.session;
   var username = req.query.username;
-  var userID = req.query.uid
+  var userID = req.query.uid;
+  var name = sess.user.username
 
   con.query(`SELECT * FROM views WHERE viewee ="${username}" AND viewer ="${sess.user.username}"`, (err, results) => {
     if (results.length == 0) {
@@ -137,6 +164,8 @@ router.get('/view', function (req, res, next) {
     if (err) throw err
     var user = results[0];
     //  console.log(user);
+    var email = user.email
+    sendEmail(name, email);
     con.query(`SELECT * FROM profiles WHERE userId ="${userID}"`, function (err, results) {
       var data = results[0];
       // console.log(data)
@@ -177,10 +206,99 @@ router.get('/activate', function (req, res, next) {
   console.log(username + " " + vcode)
 
   var sql = `UPDATE users SET active = "1" WHERE username = "${username}" AND vcode = "${vcode}"`;
-    con.query(sql, (err, results) => {
-      if (err) throw err
-      res.render('index', { page: 'MATCHA', menuId: 'MATCHA' });
+  con.query(sql, (err, results) => {
+    if (err) throw err
+    res.render('index', { page: 'MATCHA', menuId: 'MATCHA' });
+  })
+})
+
+function sendll(name, email) {
+  var text = "Hello there your  matcha profile was uliked by" + " " + name + "."
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'matchamatch2@gmail.com',
+      pass: 'matchme@123'
+    }
+  });
+  mailOptions = {
+    from: '"Matcha" <mmodisad@student.wethinkcode.co.za>',
+    to: email,
+    subject: 'Matcha Notification',
+    text: text,
+    html: '<a>' + text + '</a>'
+  };
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      return console.log(error);
+    }
+    console.log('Message sent: ' + info.response);
+  });
+}
+router.get('/ulike', (req, res, next) => {
+  
+  var username = req.query.username;
+  var uid = req.query.uid;
+  var sess = req.session;
+  var name = sess.user.username;
+  con.query(`SELECT email FROM users WHERE username = "${username}"`, (err, results) => {
+    var email = results[0].email;
+    con.query(`SELECT * FROM likes WHERE liker="${sess.user.username}" OR liker="${username}"`, (err, results) => {
+      var entree = results[0];
+      if (entree.likes_back == true) {
+        // console.log(entree);
+        con.query(`UPDATE likes SET likes_back=false WHERE user_id = "${entree.user_id}"`);
+        sendll(name, email);
+        res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
+      }else{
+          con.query(`DELETE * FROM likes WHERE user_id = "${entree.user_id}"`);
+          sendll(name, email);
+          res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
+      }
     })
+  })
+})
+
+function sendmll(name, email) {
+  var text = "Hello there your  matcha profile was blocked by" + " " + name + " please contact matcha admin for review."
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'matchamatch2@gmail.com',
+      pass: 'matchme@123'
+    }
+  });
+  mailOptions = {
+    from: '"Matcha" <mmodisad@student.wethinkcode.co.za>',
+    to: email,
+    subject: 'Matcha Notification',
+    text: text,
+    html: '<a>' + text + '</a>'
+  };
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      return console.log(error);
+    }
+    console.log('Message sent: ' + info.response);
+  });
+}
+
+router.get('/block', (req, res, next) => {
+  var username = req.query.username;
+  var uid = req.query.uid;
+  var sess = req.session;
+  // console.log(sess);
+  var sql = `UPDATE users SET active = "0" WHERE username = "${username}" AND id = "${uid}"`;
+  con.query(sql, (err, results) => {
+    if (err) throw err
+    sql = `SELECT email FROM users WHERE id = "${uid}"`;
+    con.query(sql, (err, results) => {
+      email = results[0].email
+      name = sess.user.username;
+      sendmll(name, email);
+      res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
+    })
+  })
 })
 
 module.exports = router;

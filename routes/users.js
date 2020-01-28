@@ -78,35 +78,40 @@ router.signup = function (req, res) {
          message = "Invalid email address";
          res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
       }
-
-      // Store hash in your password DB.
-      bcrypt.hash(pass, saltRounds, function (err, hash) {
-         var sql = "INSERT INTO `users`(`username`,`firstname`,`lastname`,`email`, `password`,`vcode`, `birthdate` ) VALUES ('" + name + "','" + fname + "','" + lname + "','" + email + "','" + hash + "','" + vcode + "','" + birthd + "')";
-         // var query = con.query(sql, function(err, result) {
-         //   }); 
-         con.query(sql, function (err, result) {
-            // console.log(result);
-            // console.log(sql);
-            var sql = "SELECT *, YEAR(CURDATE()) -YEAR(birthdate) -IF(STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-', MONTH(birthdate), '-', DAY(birthdate)) ,'%Y-%c-%e') > CURDATE(), 1, 0)AS age FROM users WHERE id = '" + result.insertId + "'";
-            con.query(sql, function (err, result) {
-               if (err) throw err;
-               var sql = "UPDATE users SET age = '" + result[0].age + "' WHERE id = '" + result[0].id + "'";
+      con.query(`SELECT * FROM users WHERE username = '${name}'`, (err, results) => {
+         if (err) throw err;
+         else if (results.length) {
+            message = "username already exists";
+            res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+         } else {
+            bcrypt.hash(pass, saltRounds, function (err, hash) {
+               var sql = "INSERT INTO `users`(`username`,`firstname`,`lastname`,`email`, `password`,`vcode`, `birthdate` ) VALUES ('" + name + "','" + fname + "','" + lname + "','" + email + "','" + hash + "','" + vcode + "','" + birthd + "')";
+               // var query = con.query(sql, function(err, result) {
+               //   }); 
                con.query(sql, function (err, result) {
-                  if (err) throw err;
-                  // message = "Succesfully! Your account has been created.";
-                  sendEmail(name, vcode, email);
-                  res.render('verify.ejs', { error: message })
-                  // res.render('index', { page: 'MATCHA', menuId: 'MATCHA' });
-               })
-            })
+                  // console.log(result);
+                  // console.log(sql);
+                  var sql = "SELECT *, YEAR(CURDATE()) -YEAR(birthdate) -IF(STR_TO_DATE(CONCAT(YEAR(CURDATE()), '-', MONTH(birthdate), '-', DAY(birthdate)) ,'%Y-%c-%e') > CURDATE(), 1, 0)AS age FROM users WHERE id = '" + result.insertId + "'";
+                  con.query(sql, function (err, result) {
+                     if (err) throw err;
+                     var sql = "UPDATE users SET age = '" + result[0].age + "' WHERE id = '" + result[0].id + "'";
+                     con.query(sql, function (err, result) {
+                        if (err) throw err;
+                        // message = "Succesfully! Your account has been created.";
+                        sendEmail(name, vcode, email);
+                        res.render('verify.ejs', { error: message })
+                        // res.render('index', { page: 'MATCHA', menuId: 'MATCHA' });
+                     })
+                  })
 
-         });
-
-         // message = "Succesfully! Your account has been created.";
-         // res.render('signup.ejs', { error: message });
-      });
+               });
+               // message = "Succesfully! Your account has been created.";
+               // res.render('signup.ejs', { error: message });
+            });
+         }
+      })
+      // Store hash in your password DB.
       //message = "A confirmation email has been sent to you";
-
    } else {
       res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
    }
@@ -128,7 +133,6 @@ router.login = function (req, res) {
       var unhash_pass = post.password;
 
       var sql = `SELECT password FROM users WHERE username = '${name}' AND active = 1`;
-
       //gets the hashed password using the username
       con.query(sql, function (err, results) {
          var hash_pass;
@@ -153,10 +157,12 @@ router.login = function (req, res) {
                         sess.userId = results[0].id;
                         sess.user = results[0];
                         sess.loggedin = true;
+                        con.query(`UPDATE users SET connection = "online" WHERE username ='${name}'`);
                         var sql = "SELECT*FROM `profiles` WHERE `userID` = '" + sess.userId + "'";
                         con.query(sql, function (err, results) {
                            if (results.length) {
                               sess.data = results[0];
+                              var users = [];
                               if (sess.data.sexualpref == "male") {
                                  console.log("here")
                                  var sql = "SELECT * FROM profiles WHERE gender = 'male' AND sexualpref = '" + sess.data.gender + "' OR sexualpref ='both'";
@@ -165,7 +171,6 @@ router.login = function (req, res) {
                                        users.push(iterm.userID);
                                        // console.log(users);
                                     })
-
                                     var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
                                     con.query(sql, function (err, results) {
                                        // console.log(results);
@@ -178,7 +183,6 @@ router.login = function (req, res) {
                                              users.push(iterm.id);
                                           })
                                           // console.log(users);
-
                                           var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";
                                           con.query(sql, function (err, results) {
                                              var userinterests = results;
