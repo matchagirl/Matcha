@@ -12,7 +12,8 @@
   <div class="container-fluid bg-3 text-center">
     <!-- <h4><%=page %></h4><br> -->
     <h3> <%=user.firstname%> <%=user.lastname%> <%=user.username%></h3>
-    <button><a href="/like">LIKE</a></button> <button><a href="http://localhost:8081/ulike?uid=<%=user.id%>&username=<%=user.username%>">ULIKE</a></button> 
+    <button><a href="http://localhost:8081/like?uid=<%=user.id%>&username=<%=user.username%>">LIKE</a></button>
+    <button><a href="http://localhost:8081/ulike?uid=<%=user.id%>&username=<%=user.username%>">ULIKE</a></button> 
     <button><a href="http://localhost:8081/block?uid=<%=user.id%>&username=<%=user.username%>">BLOCK</a></button>
     <%if(data){%>
       <div class="container">

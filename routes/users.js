@@ -8,6 +8,7 @@ var nodemailer = require('nodemailer');
 var uniqid = require('uniqid');
 const saltRounds = 10;
 var regex = require('regex');
+var sanitizer = require('sanitizer');
 // var fileUpload = require('express-fileupload');
 
 
@@ -48,14 +49,15 @@ router.signup = function (req, res) {
    console.log("register here");
    if (req.method == "POST") {
       var post = req.body;
-      var name = post.user_name;
-      var fname = post.first_name;
-      var lname = post.last_name;
-      var email = post.email;
-      var pass = post.password;
-      var birthd = post.birthdate;
+      var name = sanitizer.sanitize(post.user_name).trim();
+      var fname = sanitizer.sanitize(post.first_name).trim();
+      var lname = sanitizer.sanitize(post.last_name).trim();
+      var email = sanitizer.sanitize(post.email).trim();
+      var pass = sanitizer.sanitize(post.password).trim();
+      var birthd = sanitizer.sanitize(post.birthdate).trim();
       var vcode = uniqid();
 
+      console.log(email);
 
       if (name == '' || fname == '' || lname == '' || email == '' || pass == '' || birthd == '') {
          message = "All fileds are required.";
@@ -78,12 +80,21 @@ router.signup = function (req, res) {
          message = "Invalid email address";
          res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
       }
-      con.query(`SELECT * FROM users WHERE username = '${name}'`, (err, results) => {
+      con.query(`SELECT * FROM users WHERE username = '${name}' OR email = '${email}'`, (err, results) => {
+         // console.log(results);
          if (err) throw err;
-         else if (results.length) {
-            message = "username already exists";
-            res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+         else if (results.length){
+
+            if(results[0].email == email){
+              message = "email already exists";
+              res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+           }
+           else if (results[0].username == name) {
+              message = "username already exists";
+              res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
+           }
          } else {
+         
             bcrypt.hash(pass, saltRounds, function (err, hash) {
                var sql = "INSERT INTO `users`(`username`,`firstname`,`lastname`,`email`, `password`,`vcode`, `birthdate` ) VALUES ('" + name + "','" + fname + "','" + lname + "','" + email + "','" + hash + "','" + vcode + "','" + birthd + "')";
                // var query = con.query(sql, function(err, result) {
@@ -129,8 +140,8 @@ router.login = function (req, res) {
 
    if (req.method == "POST") {
       var post = req.body;
-      var name = post.username;
-      var unhash_pass = post.password;
+      var name = sanitizer.sanitize(post.username).trim();
+      var unhash_pass = sanitizer.sanitize(post.password).trim();
 
       var sql = `SELECT password FROM users WHERE username = '${name}' AND active = 1`;
       //gets the hashed password using the username
@@ -417,19 +428,19 @@ router.update = function (req, res) {
 
       // console.log("here");
       var post = req.body;
-      var name = post.user_name;
-      var fname = post.first_name;
-      var lname = post.last_name;
-      var email = post.email;
-      var gender = post.gender;
-      var sexualpref = post.sexualpreference;
-      var biography = post.biography[0];
+      var name = sanitizer.sanitize(post.user_name).trim();
+      var fname = sanitizer.sanitize(post.first_name).trim();
+      var lname = sanitizer.sanitize(post.last_name).trim();
+      var email = sanitizer.sanitize(post.email).trim();
+      var gender = sanitizer.sanitize(post.gender).trim();
+      var sexualpref = sanitizer.sanitize(post.sexualpreference).trim();
+      var biography = sanitizer.sanitize(post.biography[0]).trim();
       var extremeSport = post.extreme_sport;
       var outdoor = post.outdoor_activities;
       var geekSport = post.geek_sports;
       var foodie = post.foodie;
       var BDSM = post.BDSM;
-      var otherinterest = post.otherInterest;
+      var otherinterest = sanitizer.sanitize(post.otherInterest).trim();
       var file = req.files;
       if (file) {
          var propic = req.files.avator;
@@ -910,14 +921,14 @@ router.update2 = function (req, res) {
       // console.log("here");
       var post = req.body;
       var gender = post.gender;
-      var sexualpref = post.sexualpreference;
-      var biography = post.biography[0];
+      var sexualpref = sanitizer.sanitize(post.sexualpreference).trim();
+      var biography = sanitizer.sanitize(post.biography[0]).trim();
       var extremeSport = post.extreme_sport;
       var outdoor = post.outdoor_activities;
       var geekSport = post.geek_sports;
       var foodie = post.foodie;
       var BDSM = post.BDSM;
-      var otherinterest = post.otherInterest;
+      var otherinterest = sanitizer.sanitize(post.otherInterest).trim();
       var file = req.files;
       if (file) {
          var propic = req.files.avator;

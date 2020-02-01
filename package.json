@@ -26,6 +26,7 @@
     "match": "^1.2.9",
     "regex": "^0.1.1",
     "uniqid": "^5.2.0",
-    "validator": "^12.1.0"
+    "validator": "^12.1.0",
+    "password-validator": "^5.0.3"
   }
 }

@@ -3,6 +3,7 @@ var router = express.Router();
 var mysql = require('mysql');
 const con = require('../models/connection.js');
 var nodemailer = require('nodemailer');
+var sanitizer = require('sanitizer');
 
 // /* GET home page. */
 // router.get('/', function(req, res, next) {
@@ -192,11 +193,55 @@ router.get('/view', function (req, res, next) {
   })
 });
 
-router.get('/like', function (req, res, next) {
-  // console.log("jonga");
-  var sess = req.session
-  // console.log(sess);
-  res.render('like', { page: 'MATCHA', menuId: 'MATCHA', data: sess.data, username: sess.user.username });
+function sendmail(name, email) {
+  var text = "Hello there, " + name + " has liked you back on matcha"
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'matchamatch2@gmail.com',
+      pass: 'matchme@123'
+    }
+  });
+  mailOptions = {
+    from: '"Matcha" <mmodisad@student.wethinkcode.co.za>',
+    to: email,
+    subject: 'Matcha Notification',
+    text: text,
+    html: '<a>' + text + '</a>'
+  };
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      return console.log(error);
+    }
+    console.log('Message sent: ' + info.response);
+  });
+}
+
+router.get('/like', (req, res) => {
+  var target_like = req.query.username;
+  var sess = req.session;
+  console.log(target_like);
+  // exit() 
+  var name = sess.user.username
+  con.query(`SELECT * FROM likes WHERE liker="${target_like}" AND likes="${sess.user.username}"`, (err, results) => {
+    if (results.length == 0) {
+      con.query(`INSERT INTO likes (user_id,liker, likes) VALUES ("${sess.userId}","${sess.user.username}", "${target_like}")`);
+      con.query(`SELECT email FROM users WHERE username ="${target_like}"`, (err, results) => {
+        console.log(results)
+        var email = results[0].email;
+        sendEmail(name, email);
+      })
+      res.render('like', { page: 'MATCHA', menuId: 'MATCHA', data: sess.data, username: sess.user.username })
+    }
+    else {
+      con.query(`UPDATE likes SET likes_back=true WHERE liker="${target_like}" and likes="${sess.user.username}"`);
+      con.query(`SELECT email FROM users WHERE username ="${target_like}"`, (err, results) => {
+        var email = results[0].email;
+        sendmail(name, email);
+      })
+      res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
+    }
+  });
 });
 
 router.get('/activate', function (req, res, next) {
@@ -251,7 +296,7 @@ router.get('/ulike', (req, res, next) => {
         sendll(name, email);
         res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
       }else{
-          con.query(`DELETE * FROM likes WHERE user_id = "${entree.user_id}"`);
+          con.query(`DELETE FROM likes WHERE user_id = "${entree.user_id}"`);
           sendll(name, email);
           res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
       }
@@ -301,4 +346,32 @@ router.get('/block', (req, res, next) => {
   })
 })
 
+router.get('/views', (req, res, next)=>{
+  var sess = req.session;
+  var username = sess.user.username
+  // console.log(username);
+ message = '';
+ likes = [];
+ con.query(`SELECT viewer FROM views WHERE viewee = "${ username}"`, (err, results) =>{
+   if (err) throw err
+   views = results;
+   con.query(`SELECT likes FROM likes WHERE liker = "${username}" AND likes_back =true`, (err, results)=>{
+     if (err) throw err
+     results.forEach(function(iterm){
+       likes.push(iterm.likes)
+     })
+    //  console.log(likes);
+    con.query(`SELECT liker FROM likes WHERE likes = "${username}"`, (err, results) =>{
+      if (err) throw err;
+      results.forEach(function(iterm){
+        likes.push(iterm.liker)
+      })
+      // console.log(likes);
+      
+      res.render('views.ejs', { error: message, views : views, likes : likes})
+    })
+     
+   })
+ })
+})
 module.exports = router;
