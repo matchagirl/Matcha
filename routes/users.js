@@ -20,7 +20,7 @@ router.get('/', function (req, res, next) {
 
 //---------------------------------------------register page call------------------------------------------------------
 function sendEmail(name, vcode, email) {
-   var text = "Welcome to matcha , we are here to help you connect with your soul mate, please click on the link to activate your account http://localhost:8081/activate?name=" + name + "&vcode=" + vcode;
+   var text = "Welcome to matcha , we are here to help you connect with your soul mate, please click on the link to activate your account http://localhost:8082/activate?name=" + name + "&vcode=" + vcode;
    transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -327,8 +327,8 @@ router.login = function (req, res) {
 
                                     var sql = "SELECT * FROM locations WHERE user_id = '" + sess.userId + "'";
                                     con.query(sql, function (err, results) {
-                                       // console.log(results);
-                                       // console.log(users);
+                                        console.log(results);
+                                        console.log(users);
                                        if (err) throw err;
                                        var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
                                        con.query(sql, [[...users]], function (err, results) {

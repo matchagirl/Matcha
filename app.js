@@ -117,7 +117,7 @@ app.post('/forgot', function (require, response) {
               subject: 'reset password',
               html: `
                       <h1>Click below link to reset password!</h1>
-                      <a href=http://localhost:8081/reset?email=${require.body.email}&vcode=${vcode}>Reset password<a>
+                      <a href=http://localhost:8082/reset?email=${require.body.email}&vcode=${vcode}>Reset password<a>
                       `
           };
           
@@ -208,10 +208,10 @@ app.use(function (err, req, res, next) {
 });
 
 
-app.listen(8081, (err) => {
+app.listen(8082, (err) => {
   if (err) throw err;
   else {
-    console.log("Server running on port: 8080");
+    console.log("Server running on port: 8082");
   }
 });
 

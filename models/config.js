@@ -6,8 +6,8 @@ var app = express();
 var con = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "lmnyamen",
-    socketPath: "/goinfre/lmnyamen/Desktop/MAMP/mysql/tmp/mysql.sock"
+    password: "",
+    socketPath: ""
 
   });
   

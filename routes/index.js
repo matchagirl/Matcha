@@ -104,7 +104,7 @@ router.get('/update2', function (req, res, next) {
 router.post('/saveLocation', function (req, res, next) {
   var address = req.body;
   var sess = req.session
-  // console.log(address);
+   //console.log(address);
   //change the user id to the one in the session or something
   con.query("SELECT * FROM locations WHERE user_id = '" + sess.userId + "'", (err, results) => {
     if (err) {
@@ -220,18 +220,19 @@ function sendmail(name, email) {
 router.get('/like', (req, res) => {
   var target_like = req.query.username;
   var sess = req.session;
-  console.log(target_like);
+  // console.log(target_like);
   // exit() 
   var name = sess.user.username
   con.query(`SELECT * FROM likes WHERE liker="${target_like}" AND likes="${sess.user.username}"`, (err, results) => {
     if (results.length == 0) {
       con.query(`INSERT INTO likes (user_id,liker, likes) VALUES ("${sess.userId}","${sess.user.username}", "${target_like}")`);
       con.query(`SELECT email FROM users WHERE username ="${target_like}"`, (err, results) => {
-        console.log(results)
+        // console.log(results)
         var email = results[0].email;
         sendEmail(name, email);
       })
-      res.render('like', { page: 'MATCHA', menuId: 'MATCHA', data: sess.data, username: sess.user.username })
+      // res.render('like', { page: 'MATCHA', menuId: 'MATCHA', data: sess.data, username: sess.user.username })
+      res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
     }
     else {
       con.query(`UPDATE likes SET likes_back=true WHERE liker="${target_like}" and likes="${sess.user.username}"`);

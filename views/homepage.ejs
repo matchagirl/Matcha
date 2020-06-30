@@ -29,9 +29,10 @@
 
 <body>
   <div>
-    <% include partials/menuH.ejs%>
-  </div>
-  <div id="human" class="container-fluid bg-3 text-center">
+    <div id="human" class="container-fluid bg-3 text-center">
+    <div>
+      <% include partials/menuH.ejs%>
+    </div>
     <h2><%= page %></h2><br>
     <div class="row">
       <%if(suggest.length != 0){%>
@@ -44,7 +45,7 @@
         <div class="card mb-3" style="max-width: 540px; ">
           <div class="row no-gutters">
             <div class="col-md-4">
-              <img src="http://localhost:8081/images/upload_images/<%=suggest[i].avator%>" class="card-img"
+              <img src="http://localhost:8082/images/upload_images/<%=suggest[i].avator%>" class="card-img"
                 alt="avator">
             </div>
             <div class="col-md-8">
@@ -54,7 +55,7 @@
                 <p class="card-text"><%=suggest[i].age%></p>
                 <p class="card-text"><%=suggest[i].gender%></p>
                 <p class="card-text"><%=suggest[i].city%></p>
-                <a class="card-text" href ="http://localhost:8081/view?uid=<%=suggest[i].id%>&username=<%=suggest[i].username %>"><small class="text-muted">View</small></a> </br>
+                <a class="card-text" href ="http://localhost:8082/view?uid=<%=suggest[i].id%>&username=<%=suggest[i].username %>"><small class="text-muted">View</small></a> </br>
                 <% if (suggest[i].connection == "online"){%> <small class="text-muted">online</small> <%} else{%> <small class="text-muted">lastseen:<%=suggest[i].lastseen%></small> <%}%>
               </div>
             </div>
@@ -65,18 +66,19 @@
       <%} else{%>
       <div class="col-sm-4">
         <p>"Don't wait for the perfect moment, take a moment and make it perfetct." </br>--->Zoey Saywad</p>
-        <img src="images/connected.jpg" alt="pic" height="500px" width="500px">
+        <img src="images/connected.jpg" alt="pic" height="288px" width="500px">
       </div>
       <div class="col-sm-4">
         <p> "Where ever you go, go with all your heart" </br> --->Confucius</p>
-        <img src="images/couple.jpeg" alt="pic" height="500px" width="500px">
+        <img src="images/couple.jpeg" alt="pic" height="288px" width="500px">
       </div>
       <div class="col-sm-4">
         <p>"In the end we only regret chances we didn't take!" </br> --->Lewis Carroll</p>
-        <img src="images/couple2.jpeg" alt="pic" height="500px" width="500px">
+        <img src="images/couple2.jpeg" alt="pic" height="288px" width="500px">
       </div>
       <%}%>
     </div>
+  </div>
   </div>
 </body>
 <% include partials/script.ejs%>
@@ -104,7 +106,7 @@
       console.log(response);
       $.ajax({
         "async": true,
-        "url": `http://localhost:8081/saveLocation`,
+        "url": `http://localhost:8082/saveLocation`,
         "data": res,
         "contentType": "application/x-www-form-urlencoded",
         "method": "POST"
@@ -153,7 +155,7 @@
             };
             $.ajax({
               "async": true,
-              "url": `http://localhost:8081/saveLocation`,
+              "url": `http://localhost:8082/saveLocation`,
               "data": res,
               "contentType": "application/x-www-form-urlencoded",
               "method": "POST"

@@ -45,7 +45,7 @@ router.login = function(req, res){
                            if (results.length) {
                               sess.data = results[0];
                               if (sess.data.sexualpref == "male") {
-                                 console.log("here")
+                                 //console.log("here")
                                  var sql = "SELECT * FROM profiles WHERE gender = 'male' AND sexualpref = '" + sess.data.gender + "' OR sexualpref ='both'";
                                  con.query(sql, function (err, results) {
                                     results.forEach(function (iterm) {
@@ -83,7 +83,7 @@ router.login = function(req, res){
                                                 });
                                                 sess.post = inte;
                                                 var sql = "SELECT* FROM userinterest WHERE inteId in (?)";
-                                                console.log(users)
+                                                //console.log(users)
                                                 // console.log(sql);
                                                 con.query(sql, [[...inteId]], function (err, results) {
                                                    var peepz = results;

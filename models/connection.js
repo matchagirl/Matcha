@@ -1,21 +1,19 @@
 const mysql = require('mysql');
 
 
-
 const host="localhost";
-const port=8082;
+const port=8080;
 const user="root";
-const password="lmnyamen";
+const password="";
 const database="testbase";
-const socketPath = "/goinfre/lmnyamen/Desktop/MAMP/mysql/tmp/mysql.sock";
-
+//const socketPath = "";
 var conn = mysql.createConnection({
-    host     : host,
-    port     : port,
-    user     : user,
-    password : password,
-    database : database,
-    socketPath: socketPath
+    host: "localhost",
+    user: "root",
+    password: "",
+    socketPath: "",
+    database: "testbase"
+   // socketPath: socketPath
 });
 
 conn.connect((err) => { 
