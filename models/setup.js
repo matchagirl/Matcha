@@ -60,4 +60,5 @@ con.query(`CREATE TABLE IF NOT EXISTS views(user_id int(11) NOT NULL,viewer varc
 con.query(`CREATE TABLE IF NOT EXISTS likes(id int(11) NOT NULL AUTO_INCREMENT  PRIMARY KEY,user_id int(11) NOT NULL,liker varchar(255),likes varchar(255) NOT NULL, likes_back boolean)`, (err, result) => {
    if (err) throw err;
    console.log("Table likes created");
+   process.exit();
 });

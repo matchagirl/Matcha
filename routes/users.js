@@ -333,9 +333,10 @@ router.login = function (req, res) {
                                        var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
                                        con.query(sql, [[...users]], function (err, results) {
                                           // console.log(results);
-                                          results.forEach(function (iterm) {
+                                        if(results) {  results.forEach(function (iterm) {
                                              users.push(iterm.id);
                                           })
+                                       }
                                           // console.log(users);
 
                                           var sql = "SELECT * FROM userinterest WHERE userId = '" + sess.userId + "'";

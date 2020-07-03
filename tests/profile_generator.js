@@ -2,7 +2,7 @@ const faker = require('faker'),
 	//   util 			= require('util'),
 	con = require('../models/connection.js'),
 	//   ft_util 		= require('../includes/ft_util.js'),
-	count = 1;
+	count = 100;
 
 function generate_user(i) {
 	if (i === count) {

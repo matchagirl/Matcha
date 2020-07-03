@@ -5,14 +5,14 @@ const host="localhost";
 const port=8080;
 const user="root";
 const password="";
-const database="testbase";
+const database="MATCHA";
 //const socketPath = "";
 var conn = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
     socketPath: "",
-    database: "testbase"
+    database: "MATCHA"
    // socketPath: socketPath
 });
 
