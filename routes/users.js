@@ -931,14 +931,14 @@ router.update2 = function (req, res) {
       // console.log("here");
       var post = req.body;
       var gender = post.gender;
-      var sexualpref = sanitizer.sanitize(post.sexualpreference).trim();
-      var biography = sanitizer.sanitize(post.biography[0]).trim();
+      var sexualpref = sanitizer.sanitize(post.sexualpreference);
+      var biography = sanitizer.sanitize(post.biography[0]);
       var extremeSport = post.extreme_sport;
       var outdoor = post.outdoor_activities;
       var geekSport = post.geek_sports;
       var foodie = post.foodie;
       var BDSM = post.BDSM;
-      var otherinterest = sanitizer.sanitize(post.otherInterest).trim();
+      var otherinterest = sanitizer.sanitize(post.otherInterest);
       var file = req.files;
       if (file) {
          var propic = req.files.avator;
