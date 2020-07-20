@@ -104,11 +104,11 @@ app.post('/forgot', function (require, response) {
           var vcode = results[0].vcode;
           
           let transporter = nodemailer.createTransport({
-              service: 'gmail.com',
-              auth: {
-              user: 'tmkhwana@student.wethinkcode.co.za',
-              pass: 'Honeyberry@1'
-              }
+            service: 'gmail',
+            auth: {
+              user: 'matchamatch2@gmail.com',
+              pass: 'matchme@123'
+            }
           });
           
           var mailOptions = {
