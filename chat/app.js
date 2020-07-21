@@ -22,6 +22,7 @@ var regRouter = require('./routes/register');
 var viewRouter = require('./routes/view');
 var chatRouter = require('./routes/chat');
 
+
 var app = express();
 var mysql = require('mysql');
 var bodyParser = require("body-parser");
@@ -51,7 +52,7 @@ app.use(fileUpload());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/chat', chatRouter);
-
+// app.use('/chat', chatRouter);
 // app.use('/view', viewRouter);
 // app.use('/login', loginRouter);
 // app.use('/register', regRouter);
@@ -67,6 +68,7 @@ app.post('/signup', usersRouter.signup);//call for signup post
 app.post('/update', usersRouter.update);//call for upload post
 app.post('/update2', usersRouter.update2);//call for upload2 post
 
+//sendmail function used to notify the user whenever someone likes thier profile
 function sendEmail(name, email) {
   var text = "Hello there your  matcha profile was like by" + " " + name
   transporter = nodemailer.createTransport({
@@ -91,6 +93,7 @@ function sendEmail(name, email) {
   });
 }
 
+//function used send the user a mail whenever they need to reset their password
 app.get('/forgot', (req, res) => {
   console.log('hello')
   res.render('forgot', {page: 'Forgot Password', menuId: 'Forgot Password'})
@@ -109,8 +112,8 @@ app.post('/forgot', function (require, response) {
           let transporter = nodemailer.createTransport({
               service: 'gmail.com',
               auth: {
-              user: 'tmkhwana@student.wethinkcode.co.za',
-              pass: 'Honeyberry@1'
+              user: 'matchamatch2@gmail.com',
+              pass: 'matchme@123'
               }
           });
           
@@ -151,6 +154,7 @@ app.get('/reset', function (require, response) {
   });
 });
 
+//reset password page check if the new password matches the pass validations
 app.post('/reset', (require, response) => {
   var id = require.body.id,
       pass1 = require.body.pass1,

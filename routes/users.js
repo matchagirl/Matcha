@@ -9,6 +9,9 @@ var uniqid = require('uniqid');
 const saltRounds = 10;
 var regex = require('regex');
 var sanitizer = require('sanitizer');
+const x = require('uniqid');
+var passwordValidator = require('password-validator');
+var schema = new passwordValidator();
 // var fileUpload = require('express-fileupload');
 
 
@@ -58,6 +61,12 @@ router.signup = function (req, res) {
       var vcode = uniqid();
 
       console.log(email);
+      schema
+      .is().min(6)
+      .has().uppercase()
+      .has().lowercase()
+      .has().digits()
+      .has().symbols();
 
       if (name == '' || fname == '' || lname == '' || email == '' || pass == '' || birthd == '') {
          message = "All fileds are required.";
@@ -72,8 +81,8 @@ router.signup = function (req, res) {
          message = "Last Name requires minimum of 3 characters";
          res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
          return true;
-      } else if (validator.isLength(pass, { min: 6 }) == false) {
-         message = "Password must be atleast 6 characters";
+      } else if (schema.validate(pass) === false) {
+         message = `Password needs to meet: ${schema.validate(pass, { list: true })}`;
          res.render('register', { page: 'MATCHA', menuId: 'MATCHA', message: message });
          return true;
       } else if (validator.isEmail(email) == false) {
@@ -329,8 +338,10 @@ router.login = function (req, res) {
                                     con.query(sql, function (err, results) {
                                         console.log(results);
                                         console.log(users);
-                                       if (err) throw err;
-                                       var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
+                                        console.log('asdfghjk');
+                                        if (err) throw err;
+                                        var sql = "SELECT * FROM locations WHERE city = '" + results[0].city + "' AND user_id in (?)";
+                                        console.log('11233456788900');
                                        con.query(sql, [[...users]], function (err, results) {
                                           // console.log(results);
                                         if(results) {  results.forEach(function (iterm) {
@@ -1304,6 +1315,7 @@ router.update2 = function (req, res) {
                });
             } else {
                message = "This format is not allowed , please upload file with '.png','.gif','.jpg'";
+
                //  res.render('index.ejs',{message: message});
             }
 
