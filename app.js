@@ -10,6 +10,7 @@ var nodemailer = require('nodemailer');
 var uniqid = require('uniqid');
 var sanitizer = require('sanitizer');
 var passwordValidator = require('password-validator');
+var mysql = require('mysql');
 var schema = new passwordValidator();
 
 
@@ -19,7 +20,7 @@ var usersRouter = require('./routes/users');
 var loginRouter = require('./routes/login');
 var regRouter = require('./routes/register');
 var viewRouter = require('./routes/view');
-
+var chatRouter = require('./routes/chat');
 
 var app = express();
 var mysql = require('mysql');
@@ -49,6 +50,8 @@ app.use(fileUpload());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/chat', chatRouter);
+
 // app.use('/view', viewRouter);
 // app.use('/login', loginRouter);
 // app.use('/register', regRouter);
@@ -104,11 +107,11 @@ app.post('/forgot', function (require, response) {
           var vcode = results[0].vcode;
           
           let transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-              user: 'matchamatch2@gmail.com',
-              pass: 'matchme@123'
-            }
+              service: 'gmail.com',
+              auth: {
+              user: 'tmkhwana@student.wethinkcode.co.za',
+              pass: 'Honeyberry@1'
+              }
           });
           
           var mailOptions = {

@@ -27,7 +27,7 @@ const saltRounds = 10;
 var regex = require('regex');
 //---------------------------------------------signup page call------------------------------------------------------
 function sendEmail(name, vcode, email) {
-   var text = "Welcome to matcha , we are here to help you connect with your soul mate, please click on the link to activate your account http://localhost:3600/activate?name="+name+","+ vcode;
+   var text = `Welcome to matcha , we are here to help you connect with your soul mate, please click on the link to activate your account <a href="http://localhost:3600/activate?name=${name}&vcode=${vcode}">link</a>`;
    transporter = nodemailer.createTransport({
        service: 'gmail',
        auth: {
