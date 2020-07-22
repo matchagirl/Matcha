@@ -9,9 +9,10 @@ const mysql = require('mysql');
 // const socketPath = "/goinfre/tmkhwana/Desktop/MAMP/mysql/tmp/mysql.sock";
 var conn = mysql.createConnection({
     host: "localhost",
+    port: "3307",
     user: "root",
     password: "123456",
-    socketPath: "/goinfre/tmkhwana/Desktop/MAMP/mysql/tmp/mysql.sock",
+   // socketPath: "/goinfre/tmkhwana/Desktop/MAMP/mysql/tmp/mysql.sock",
     database: "MATCHA"
     // socketPath: socketPath
 });

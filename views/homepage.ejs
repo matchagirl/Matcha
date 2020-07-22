@@ -56,6 +56,7 @@
                 <p class="card-text"><%=suggest[i].gender%></p>
                 <p class="card-text"><%=suggest[i].city%></p>
                 <a class="card-text" href ="http://localhost:8082/view?uid=<%=suggest[i].id%>&username=<%=suggest[i].username %>"><small class="text-muted">View</small></a> </br>
+                <a class="card-text"href="/message?username=<%=suggest[i].username %> ">Chat </a> </br>
                 <% if (suggest[i].connection == "online"){%> <small class="text-muted">online</small> <%} else{%> <small class="text-muted">lastseen:<%=suggest[i].lastseen%></small> <%}%>
               </div>
             </div>
@@ -103,7 +104,7 @@
         "lon": position.longitude,
         "postal_code": response.address.postcode
       };
-      console.log(response);
+     // console.log(response);
       $.ajax({
         "async": true,
         "url": `http://localhost:8082/saveLocation`,

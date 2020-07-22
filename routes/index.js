@@ -79,6 +79,50 @@ router.get('/logout', function (req, res, next) {
   //  console.log(sess);
 });
 
+//go to message UI
+router.get('/message', (req, res) => {
+  var sess = req.session
+  var receiver = req.query.username;
+  var sender = sess.user.username;
+  //console.log(sess);
+  con.query(`SELECT * FROM likes WHERE liker ="${receiver}"  AND likes ="${sender}"`, (err, results) => {
+    //console.log(results);
+    if (results.length != 0) {
+      if (results[0].likes_back == '1') {
+        res.render('chat', { page: 'Chat', menuId: 'Chat', data: sess.data, receiver: receiver, sender: sender });
+      }
+      else {
+        if (!sess.suggest)
+          sess.suggest = [];
+        res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+
+      }
+    }
+    else {
+      con.query(`SELECT * FROM likes WHERE liker ="${sender}"  AND likes ="${receiver}"`, (err, results) => {
+        //console.log(results);
+        if (results.length != 0) {
+          if (results[0].likes_back == '1') {
+            res.render('chat', { page: 'Chat', menuId: 'Chat', data: sess.data, receiver: receiver, sender: sender });
+          }
+          else {
+            if (!sess.suggest)
+              sess.suggest = [];
+            res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+          }
+        }
+        else
+        {
+          if (!sess.suggest)
+              sess.suggest = [];
+            res.render('homepage', { page: 'MATCHA', menuId: 'MATCHA', username: sess.user.username, data: sess.data, post: sess.post, suggest: sess.suggest });
+        }
+      })
+    }
+  })
+
+});
+
 /* GET profile page*/
 router.get('/profile', function (req, res, next) {
   var sess = req.session;
@@ -104,7 +148,7 @@ router.get('/update2', function (req, res, next) {
 router.post('/saveLocation', function (req, res, next) {
   var address = req.body;
   var sess = req.session
-   //console.log(address);
+  //console.log(address);
   //change the user id to the one in the session or something
   con.query("SELECT * FROM locations WHERE user_id = '" + sess.userId + "'", (err, results) => {
     if (err) {
@@ -282,7 +326,7 @@ function sendll(name, email) {
   });
 }
 router.get('/ulike', (req, res, next) => {
-  
+
   var username = req.query.username;
   var uid = req.query.uid;
   var sess = req.session;
@@ -296,10 +340,10 @@ router.get('/ulike', (req, res, next) => {
         con.query(`UPDATE likes SET likes_back=false WHERE user_id = "${entree.user_id}"`);
         sendll(name, email);
         res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
-      }else{
-          con.query(`DELETE FROM likes WHERE user_id = "${entree.user_id}"`);
-          sendll(name, email);
-          res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
+      } else {
+        con.query(`DELETE FROM likes WHERE user_id = "${entree.user_id}"`);
+        sendll(name, email);
+        res.render('profile', { page: 'MATCHA', menuId: 'MATCHA', post: sess.post, firstname: sess.user.firstname, lastname: sess.user.lastname, username: sess.user.username, data: sess.data, })
       }
     })
   })
@@ -347,32 +391,32 @@ router.get('/block', (req, res, next) => {
   })
 })
 
-router.get('/views', (req, res, next)=>{
+router.get('/views', (req, res, next) => {
   var sess = req.session;
   var username = sess.user.username
   // console.log(username);
- message = '';
- likes = [];
- con.query(`SELECT viewer FROM views WHERE viewee = "${ username}"`, (err, results) =>{
-   if (err) throw err
-   views = results;
-   con.query(`SELECT likes FROM likes WHERE liker = "${username}" AND likes_back =true`, (err, results)=>{
-     if (err) throw err
-     results.forEach(function(iterm){
-       likes.push(iterm.likes)
-     })
-    //  console.log(likes);
-    con.query(`SELECT liker FROM likes WHERE likes = "${username}"`, (err, results) =>{
-      if (err) throw err;
-      results.forEach(function(iterm){
-        likes.push(iterm.liker)
+  message = '';
+  likes = [];
+  con.query(`SELECT viewer FROM views WHERE viewee = "${username}"`, (err, results) => {
+    if (err) throw err
+    views = results;
+    con.query(`SELECT likes FROM likes WHERE liker = "${username}" AND likes_back =true`, (err, results) => {
+      if (err) throw err
+      results.forEach(function (iterm) {
+        likes.push(iterm.likes)
       })
-      // console.log(likes);
-      
-      res.render('views.ejs', { error: message, views : views, likes : likes})
+      //  console.log(likes);
+      con.query(`SELECT liker FROM likes WHERE likes = "${username}"`, (err, results) => {
+        if (err) throw err;
+        results.forEach(function (iterm) {
+          likes.push(iterm.liker)
+        })
+        // console.log(likes);
+
+        res.render('views.ejs', { error: message, views: views, likes: likes })
+      })
+
     })
-     
-   })
- })
+  })
 })
 module.exports = router;
