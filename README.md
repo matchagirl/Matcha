@@ -11,13 +11,13 @@ Download source code
 Run npm install to install all of the modules needed for the project
 
 # DATABASE CONFIGURATION AND SET UP
-Download MAMP from the bitnami website
-Open the manager-osx. Go to the Manage servers tabs and make sure mysql database is running. If not press Restart.
-Press configure, this should show detail about the port.
-Open the cloned repo on your vs code.
-Create the database titled Matcha, run node models\config.js
-Create a database tables, run node models\setup.js
-Generate 500 random users, run node tests\profile_generator.js
+  - Download MAMP from the bitnami website
+  - Open the manager-osx. Go to the Manage servers tabs and make sure mysql database is running. If not press Restart.
+  - Press configure, this should show detail about the port.
+  - Open the cloned repo on your vs code.
+  - Create the database titled Matcha, run node models\config.js
+  - Create a database tables, run node models\setup.js
+  - Generate 500 random users, run node tests\profile_generator.js
 
 # RUNNING THE PROGRAM
 Run code app.js to start the server
